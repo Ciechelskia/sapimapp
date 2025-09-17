@@ -603,7 +603,7 @@
     </div>
 
     <script>
-        // Configuration globale
+        // Configuration globale - URL N8N MODIFIÉE
         const CONFIG = {
             N8N_WEBHOOK_URL: 'https://andreaprogra.app.n8n.cloud/webhook-test/488301f2-8446-4bd3-8758-5c2b6ecc52e',
             APP_VERSION: '1.0.0'
@@ -1118,6 +1118,7 @@
                 }
             }
 
+            // APPEL N8N MODIFIÉ - VRAI APPEL AU LIEU DE SIMULATION
             async callN8nWebhook(audioBase64, brouillonId) {
                 try {
                     const payload = {
@@ -1126,34 +1127,16 @@
                         timestamp: new Date().toISOString()
                     };
 
-                    // Simulation d'appel réseau (à remplacer par le vrai appel)
-                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    const response = await fetch(CONFIG.N8N_WEBHOOK_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(payload)
+                    });
 
-                    const mockResponse = {
-                        reportId: brouillonId,
-                        content: `Rapport de visite - ${new Date().toLocaleDateString()}
-
-INFORMATIONS GÉNÉRALES
-• Date de visite : ${new Date().toLocaleDateString()}
-• Commercial : ${this.currentUser.nom}
-• Heure : ${new Date().toLocaleTimeString()}
-
-RÉSUMÉ DE LA VISITE
-Ceci est un rapport généré automatiquement à partir de votre enregistrement vocal. Le contenu détaillé de votre visite sera ici après traitement par l'IA.
-
-ACTIONS À SUIVRE
-• Point 1 à suivre
-• Point 2 à suivre
-• Point 3 à suivre
-
-OBSERVATIONS
-Observations et notes complémentaires seront ajoutées ici.
-
-Rapport généré automatiquement - Vous pouvez le modifier avant validation.`,
-                        status: "success"
-                    };
-
-                    this.updateBrouillonWithReport(brouillonId, mockResponse.content);
+                    const result = await response.json();
+                    this.updateBrouillonWithReport(brouillonId, result.content);
 
                 } catch (error) {
                     this.updateBrouillonStatus(brouillonId, 'error');
