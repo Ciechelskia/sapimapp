@@ -605,7 +605,7 @@
     <script>
         // Configuration globale
         const CONFIG = {
-            N8N_WEBHOOK_URL: 'https://your-n8n-instance.com/webhook/audio-report',
+            N8N_WEBHOOK_URL: 'https://andreaprogra.app.n8n.cloud/webhook-test/488301f2-8446-4bd3-8758-5c2b6ecc52e',
             APP_VERSION: '1.0.0'
         };
 
@@ -1023,13 +1023,25 @@
                     recordBtn.classList.add('recording');
                     status.textContent = '🔴 Enregistrement en cours...';
                     controls.classList.remove('show');
-                    sendBtn.classList.remove('show');
+                    
+                    // Masquer les contrôles upload pendant l'enregistrement
+                    const uploadedControls = document.getElementById('uploadedControls');
+                    if (uploadedControls) uploadedControls.style.display = 'none';
+                    
                 } else {
                     recordBtn.textContent = '⏺️';
                     recordBtn.classList.remove('recording');
                     status.textContent = '✅ Enregistrement terminé';
                     controls.classList.add('show');
                     sendBtn.classList.add('show');
+                    
+                    // Mettre à jour la source audio
+                    this.currentAudioSource = 'recorded';
+                    
+                    // Supprimer le fichier uploadé s'il y en avait un
+                    if (this.uploadedBlob) {
+                        this.removeUploadedFile();
+                    }
                 }
             }
 
