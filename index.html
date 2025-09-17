@@ -95,7 +95,7 @@
             background: #d32f2f;
         }
 
-        /* PAGE CONTENT - IMPORTANTE CORRECTION */
+        /* PAGES - CORRECTION CRITIQUE */
         .page {
             display: none;
             flex: 1;
@@ -103,6 +103,10 @@
             border-radius: 15px;
             padding: 30px;
             box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .page.active {
+            display: block;
         }
 
         .page h1 {
@@ -441,30 +445,6 @@
             margin-bottom: 15px;
         }
 
-        /* RESPONSIVE */
-        @media (max-width: 480px) {
-            .container {
-                padding: 15px;
-            }
-            
-            .header {
-                padding: 10px 15px;
-            }
-            
-            .page {
-                padding: 20px;
-            }
-            
-            .report-actions {
-                justify-content: center;
-            }
-
-            .nav-btn {
-                padding: 6px 8px;
-                font-size: 10px;
-            }
-        }
-
         /* Loading animation */
         .loading-spinner {
             border: 3px solid #f3f3f3;
@@ -482,12 +462,6 @@
         }
 
         /* Status indicators */
-        .status-pending {
-            background: #fff3cd;
-            border-color: #ffeaa7;
-            color: #856404;
-        }
-
         .status-generating {
             background: #cce5ff;
             border-color: #99d6ff;
@@ -503,13 +477,13 @@
 </head>
 <body>
     <div class="container">
-        <!-- HEADER (caché sur login) -->
+        <!-- HEADER -->
         <div class="header" id="header">
             <div class="user-info">
                 <div class="avatar" id="userAvatar">U</div>
                 <div>
                     <div id="userName">Utilisateur</div>
-                    <div style="font-size: 12px; color: #666;" id="userRole">Commercial</div>
+                    <div style="font-size: 12px; color: #666;">Commercial</div>
                 </div>
             </div>
             <div class="nav-buttons">
@@ -519,437 +493,196 @@
             </div>
         </div>
 
-        <!-- MAIN CONTENT AREA -->
-        <div id="mainContent">
+        <!-- PAGE LOGIN -->
+        <div class="page login-page active" id="loginPage">
+            <div class="logo">🏢</div>
+            <h1>Connexion</h1>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">👤 Nom d'utilisateur</label>
+                    <input type="text" id="username" name="username" required value="commercial1">
+                </div>
+                <div class="form-group">
+                    <label for="password">🔒 Mot de passe</label>
+                    <input type="password" id="password" name="password" required value="pass123">
+                </div>
+                <button type="submit" class="login-btn">Se connecter</button>
+                <div class="error-message" id="errorMessage"></div>
+                <div class="loading" id="loadingMessage">
+                    <div class="loading-spinner"></div>
+                    Connexion en cours...
+                </div>
+            </form>
+        </div>
+
+        <!-- PAGE BROUILLON -->
+        <div class="page" id="brouillonPage">
+            <h1>📝 Brouillons</h1>
             
-            <!-- PAGE LOGIN -->
-            <div class="page login-page" id="loginPage" style="display: block;">
-                <div class="logo">🏢</div>
-                <h1>Connexion</h1>
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label for="username">👤 Nom d'utilisateur</label>
-                        <input type="text" id="username" name="username" required autocomplete="username">
-                    </div>
-                    <div class="form-group">
-                        <label for="password">🔒 Mot de passe</label>
-                        <input type="password" id="password" name="password" required autocomplete="current-password">
-                    </div>
-                    <button type="submit" class="login-btn" id="loginBtn">Se connecter</button>
-                    <div class="error-message" id="errorMessage"></div>
-                    <div class="loading" id="loadingMessage">
-                        <div class="loading-spinner"></div>
-                        Connexion en cours...
-                    </div>
-                </form>
+            <!-- Section Enregistrement -->
+            <div class="recording-section">
+                <h3>🎤 Enregistrer un nouveau rapport</h3>
+                <div class="record-button" id="recordBtn">⏺️</div>
+                <div id="recordingStatus">Appuyer pour enregistrer</div>
+                
+                <div class="audio-controls" id="audioControls">
+                    <button class="audio-btn" id="playBtn">▶️ Écouter</button>
+                    <button class="audio-btn" id="reRecordBtn">🔄 Refaire</button>
+                </div>
+                
+                <button class="send-btn" id="sendAudioBtn">📤 Envoyer le vocal</button>
             </div>
 
-            <!-- PAGE BROUILLON -->
-            <div class="page" id="brouillonPage" style="display: none;">
-                <h1>📝 Brouillons</h1>
-                
-                <!-- Section Enregistrement -->
-                <div class="recording-section">
-                    <h3>🎤 Enregistrer un nouveau rapport</h3>
-                    <div class="record-button" id="recordBtn">⏺️</div>
-                    <div id="recordingStatus">Appuyer pour enregistrer</div>
-                    
-                    <div class="audio-controls" id="audioControls">
-                        <button class="audio-btn" id="playBtn">▶️ Écouter</button>
-                        <button class="audio-btn" id="reRecordBtn">🔄 Refaire</button>
-                    </div>
-                    
-                    <button class="send-btn" id="sendAudioBtn">📤 Envoyer le vocal</button>
-                </div>
-
-                <!-- Liste des brouillons -->
-                <div>
-                    <h3>📋 Rapports en attente de validation :</h3>
-                    <div class="reports-list" id="brouillonsList">
-                        <div class="empty-state">
-                            <div class="icon">📄</div>
-                            <p>Aucun brouillon pour le moment</p>
-                            <p style="font-size: 14px; margin-top: 10px;">Enregistrez votre premier rapport vocal !</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PAGE RAPPORTS -->
-            <div class="page" id="rapportsPage" style="display: none;">
-                <h1>📊 Rapports finalisés</h1>
-                
-                <!-- Section Recherche -->
-                <div class="search-section">
-                    <input type="text" class="search-input" id="searchInput" placeholder="🔍 Rechercher un rapport...">
-                </div>
-
-                <!-- Stats -->
-                <div style="text-align: center; margin-bottom: 20px; color: #666;">
-                    ✅ Rapports validés : <span id="rapportsCount">0</span>
-                </div>
-
-                <!-- Liste des rapports -->
-                <div class="reports-list" id="rapportsList">
+            <div>
+                <h3>📋 Rapports en attente :</h3>
+                <div class="reports-list" id="brouillonsList">
                     <div class="empty-state">
-                        <div class="icon">📋</div>
-                        <p>Aucun rapport finalisé</p>
-                        <p style="font-size: 14px; margin-top: 10px;">Validez vos brouillons pour les voir ici !</p>
+                        <div class="icon">📄</div>
+                        <p>Aucun brouillon pour le moment</p>
                     </div>
                 </div>
             </div>
+        </div>
 
+        <!-- PAGE RAPPORTS -->
+        <div class="page" id="rapportsPage">
+            <h1>📊 Rapports finalisés</h1>
+            
+            <div class="search-section">
+                <input type="text" class="search-input" id="searchInput" placeholder="🔍 Rechercher...">
+            </div>
+
+            <div style="text-align: center; margin-bottom: 20px; color: #666;">
+                ✅ Rapports : <span id="rapportsCount">0</span>
+            </div>
+
+            <div class="reports-list" id="rapportsList">
+                <div class="empty-state">
+                    <div class="icon">📋</div>
+                    <p>Aucun rapport finalisé</p>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Configuration globale - URL N8N MODIFIÉE
+        // Configuration
         const CONFIG = {
-            N8N_WEBHOOK_URL: 'https://andreaprogra.app.n8n.cloud/webhook-test/488301f2-8446-4bd3-8758-5c2b6ecc52e',
-            APP_VERSION: '1.0.0'
+            N8N_WEBHOOK_URL: 'https://andreaprogra.app.n8n.cloud/webhook-test/488301f2-8446-4bd3-8758-5c2b6ecc52e'
         };
 
-        // Base de données utilisateurs locale
+        // Base de données utilisateurs
         const USERS_DB = [
-            { 
-                id: 1, 
-                username: "commercial1", 
-                password: "pass123", 
-                nom: "Jean Dupont",
-                deviceId: null,
-                isActive: true,
-                registeredAt: "2024-09-01T10:00:00Z"
-            },
-            { 
-                id: 2, 
-                username: "commercial2", 
-                password: "pass456", 
-                nom: "Marie Martin",
-                deviceId: null,
-                isActive: true,
-                registeredAt: "2024-09-01T10:00:00Z"
-            },
-            { 
-                id: 3, 
-                username: "manager1", 
-                password: "pass789", 
-                nom: "Paul Durand",
-                deviceId: null,
-                isActive: true,
-                registeredAt: "2024-09-01T10:00:00Z"
-            }
+            { username: "commercial1", password: "pass123", nom: "Jean Dupont" }
         ];
 
-        // Pages disponibles
-        const PAGES = {
-            LOGIN: 'loginPage',
-            BROUILLON: 'brouillonPage',
-            RAPPORTS: 'rapportsPage'
-        };
-
-        // Manager principal de l'application
         class AppManager {
             constructor() {
                 this.currentUser = null;
-                this.currentPage = PAGES.LOGIN;
                 this.audioRecorder = null;
                 this.recordedBlob = null;
                 this.isRecording = false;
                 this.audioStream = null;
                 
-                this.initializeApp();
                 this.bindEvents();
             }
 
-            // Génère un ID unique pour le téléphone
-            generateDeviceId() {
-                const screen = `${window.screen.width}x${window.screen.height}`;
-                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                const language = navigator.language;
-                const platform = navigator.platform;
-                const userAgent = navigator.userAgent.substring(0, 50);
-                
-                return btoa(`${screen}-${timezone}-${language}-${platform}-${userAgent}`);
-            }
-
-            // Initialisation de l'app
-            initializeApp() {
-                this.logout();
-                this.showPage(PAGES.LOGIN);
-            }
-
-            // Charge les données depuis localStorage
-            loadAppData() {
-                try {
-                    const saved = localStorage.getItem('rapportsApp');
-                    if (saved) {
-                        const data = JSON.parse(saved);
-                        return {
-                            brouillons: data.brouillons || [],
-                            rapports: data.rapports || []
-                        };
-                    }
-                } catch (error) {
-                    console.error('Erreur lecture localStorage:', error);
-                }
-                return { brouillons: [], rapports: [] };
-            }
-
-            // Sauvegarde les données
-            saveAppData(data) {
-                try {
-                    const dataToSave = {
-                        ...data,
-                        lastSaved: new Date().toISOString()
-                    };
-                    localStorage.setItem('rapportsApp', JSON.stringify(dataToSave));
-                } catch (error) {
-                    console.error('Erreur sauvegarde localStorage:', error);
-                }
-            }
-
-            // NOUVELLE MÉTHODE SHOW PAGE - SIMPLE ET EFFICACE
+            // NAVIGATION CORRIGÉE
             showPage(pageId) {
-                // Masquer TOUTES les pages
-                Object.values(PAGES).forEach(id => {
-                    const page = document.getElementById(id);
-                    if (page) {
-                        page.style.display = 'none';
-                    }
+                console.log('Affichage page:', pageId, 'User:', this.currentUser ? this.currentUser.nom : 'none');
+                
+                // Masquer toutes les pages
+                document.querySelectorAll('.page').forEach(page => {
+                    page.classList.remove('active');
                 });
 
-                // Afficher SEULEMENT la page demandée
-                const targetPage = document.getElementById(pageId);
                 const header = document.getElementById('header');
-
-                if (pageId === PAGES.LOGIN) {
-                    // Afficher login SEULEMENT si pas connecté
-                    if (!this.currentUser && targetPage) {
-                        targetPage.style.display = 'block';
+                
+                if (pageId === 'loginPage') {
+                    if (!this.currentUser) {
+                        document.getElementById('loginPage').classList.add('active');
+                        header.style.display = 'none';
                     }
-                    if (header) header.style.display = 'none';
-                } else {
-                    // Afficher les autres pages seulement si connecté
-                    if (this.currentUser && targetPage) {
-                        targetPage.style.display = 'block';
-                    }
-                    if (header) header.style.display = 'flex';
+                } else if (this.currentUser) {
+                    document.getElementById(pageId).classList.add('active');
+                    header.style.display = 'flex';
+                    this.updateNavigation(pageId);
                 }
-
-                this.currentPage = pageId;
-                this.updateNavigation();
             }
 
-            updateNavigation() {
-                // Mise à jour des boutons de navigation
+            updateNavigation(currentPage) {
                 document.querySelectorAll('.nav-btn').forEach(btn => {
                     btn.classList.remove('active');
                 });
 
-                if (this.currentPage === PAGES.BROUILLON) {
-                    const navBrouillon = document.getElementById('navBrouillon');
-                    if (navBrouillon) navBrouillon.classList.add('active');
-                } else if (this.currentPage === PAGES.RAPPORTS) {
-                    const navRapports = document.getElementById('navRapports');
-                    if (navRapports) navRapports.classList.add('active');
+                if (currentPage === 'brouillonPage') {
+                    document.getElementById('navBrouillon').classList.add('active');
+                } else if (currentPage === 'rapportsPage') {
+                    document.getElementById('navRapports').classList.add('active');
                 }
             }
 
-            // Gestion des événements
             bindEvents() {
                 // Login
-                const loginForm = document.getElementById('loginForm');
-                if (loginForm) {
-                    loginForm.addEventListener('submit', (e) => {
-                        e.preventDefault();
-                        this.handleLogin();
-                    });
-                }
+                document.getElementById('loginForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.handleLogin();
+                });
 
                 // Navigation
-                const navBrouillon = document.getElementById('navBrouillon');
-                const navRapports = document.getElementById('navRapports');
-                const logoutBtn = document.getElementById('logoutBtn');
+                document.getElementById('navBrouillon').addEventListener('click', () => {
+                    this.showPage('brouillonPage');
+                });
 
-                if (navBrouillon) {
-                    navBrouillon.addEventListener('click', () => {
-                        this.showPage(PAGES.BROUILLON);
-                    });
-                }
+                document.getElementById('navRapports').addEventListener('click', () => {
+                    this.showPage('rapportsPage');
+                });
 
-                if (navRapports) {
-                    navRapports.addEventListener('click', () => {
-                        this.showPage(PAGES.RAPPORTS);
-                    });
-                }
+                document.getElementById('logoutBtn').addEventListener('click', () => {
+                    this.logout();
+                });
 
-                if (logoutBtn) {
-                    logoutBtn.addEventListener('click', () => {
-                        this.logout();
-                    });
-                }
+                // Audio
+                document.getElementById('recordBtn').addEventListener('click', () => {
+                    this.toggleRecording();
+                });
 
-                // Audio recording
-                const recordBtn = document.getElementById('recordBtn');
-                const playBtn = document.getElementById('playBtn');
-                const reRecordBtn = document.getElementById('reRecordBtn');
-                const sendAudioBtn = document.getElementById('sendAudioBtn');
-
-                if (recordBtn) {
-                    recordBtn.addEventListener('click', () => {
-                        this.toggleRecording();
-                    });
-                }
-
-                if (playBtn) {
-                    playBtn.addEventListener('click', () => {
-                        this.playRecording();
-                    });
-                }
-
-                if (reRecordBtn) {
-                    reRecordBtn.addEventListener('click', () => {
-                        this.resetRecording();
-                    });
-                }
-
-                if (sendAudioBtn) {
-                    sendAudioBtn.addEventListener('click', () => {
-                        this.sendAudio();
-                    });
-                }
-
-                // Search
-                const searchInput = document.getElementById('searchInput');
-                if (searchInput) {
-                    searchInput.addEventListener('input', (e) => {
-                        this.filterRapports(e.target.value);
-                    });
-                }
+                document.getElementById('sendAudioBtn').addEventListener('click', () => {
+                    this.sendAudio();
+                });
             }
 
-            // Gestion du login
             async handleLogin() {
-                const usernameEl = document.getElementById('username');
-                const passwordEl = document.getElementById('password');
-                const errorDiv = document.getElementById('errorMessage');
-                const loadingDiv = document.getElementById('loadingMessage');
-                const loginBtn = document.getElementById('loginBtn');
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                console.log('Tentative connexion:', username);
 
-                if (!usernameEl || !passwordEl) return;
-
-                const username = usernameEl.value.trim();
-                const password = passwordEl.value.trim();
-
-                // Validation basique
-                if (!username || !password) {
-                    this.showError('Veuillez remplir tous les champs');
-                    return;
-                }
-
-                // Reset des messages
-                if (errorDiv) errorDiv.style.display = 'none';
-                if (loadingDiv) loadingDiv.style.display = 'block';
-                if (loginBtn) loginBtn.disabled = true;
-
-                try {
-                    // Simulation délai réseau
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-
-                    // Vérification utilisateur
-                    const user = USERS_DB.find(u => u.username === username && u.password === password);
+                const user = USERS_DB.find(u => u.username === username && u.password === password);
+                
+                if (user) {
+                    this.currentUser = user;
                     
-                    if (!user) {
-                        throw new Error('Identifiants incorrects');
-                    }
-
-                    if (!user.isActive) {
-                        throw new Error('Compte désactivé. Contactez l\'administrateur.');
-                    }
-
-                    // Vérification Device ID
-                    const deviceId = this.generateDeviceId();
+                    // Mise à jour UI
+                    document.getElementById('userName').textContent = user.nom;
+                    document.getElementById('userAvatar').textContent = user.nom.substring(0, 2);
                     
-                    if (user.deviceId && user.deviceId !== deviceId) {
-                        throw new Error(`⚠️ Accès refusé\n\nCe compte est déjà lié à un autre appareil.\n\nPour changer d'appareil, contactez :\n- Email: admin@entreprise.com\n- Tel: 01.XX.XX.XX.XX\n\nVotre demande sera traitée sous 24h.`);
-                    }
-
-                    // Premier login = enregistrement du device
-                    if (!user.deviceId) {
-                        user.deviceId = deviceId;
-                        console.log(`Device enregistré pour ${username}: ${deviceId}`);
-                    }
-
-                    // Connexion réussie
-                    this.currentUser = {
-                        ...user,
-                        loginTime: new Date().toISOString()
-                    };
-
-                    this.updateUserInterface();
-                    this.loadUserData();
-                    this.showPage(PAGES.BROUILLON);
-
-                } catch (error) {
-                    this.showError(error.message);
-                } finally {
-                    if (loadingDiv) loadingDiv.style.display = 'none';
-                    if (loginBtn) loginBtn.disabled = false;
+                    console.log('Connexion réussie, affichage brouillons');
+                    this.showPage('brouillonPage');
+                } else {
+                    document.getElementById('errorMessage').textContent = 'Identifiants incorrects';
+                    document.getElementById('errorMessage').style.display = 'block';
                 }
             }
 
-            showError(message) {
-                const errorDiv = document.getElementById('errorMessage');
-                if (errorDiv) {
-                    errorDiv.textContent = message;
-                    errorDiv.style.display = 'block';
-                }
-            }
-
-            // Mise à jour de l'interface utilisateur
-            updateUserInterface() {
-                if (this.currentUser) {
-                    const userNameEl = document.getElementById('userName');
-                    const userAvatarEl = document.getElementById('userAvatar');
-                    
-                    if (userNameEl) userNameEl.textContent = this.currentUser.nom;
-                    if (userAvatarEl) {
-                        const initials = this.currentUser.nom.split(' ').map(n => n[0]).join('').substring(0, 2);
-                        userAvatarEl.textContent = initials;
-                    }
-                }
-            }
-
-            // Chargement des données utilisateur
-            loadUserData() {
-                const saved = this.loadAppData();
-                if (saved && saved.brouillons) {
-                    this.updateBrouillonsList(saved.brouillons);
-                }
-                if (saved && saved.rapports) {
-                    this.updateRapportsList(saved.rapports);
-                }
-            }
-
-            // Déconnexion
             logout() {
                 this.currentUser = null;
-                this.resetRecording();
-                
-                // Reset du formulaire
-                const loginForm = document.getElementById('loginForm');
-                const errorMessage = document.getElementById('errorMessage');
-                const loadingMessage = document.getElementById('loadingMessage');
-                
-                if (loginForm) loginForm.reset();
-                if (errorMessage) errorMessage.style.display = 'none';
-                if (loadingMessage) loadingMessage.style.display = 'none';
-                
-                this.showPage(PAGES.LOGIN);
+                document.getElementById('loginForm').reset();
+                document.getElementById('errorMessage').style.display = 'none';
+                this.showPage('loginPage');
             }
 
-            // === GESTION AUDIO ===
-
+            // Audio simplifié pour test
             async toggleRecording() {
                 if (this.isRecording) {
                     this.stopRecording();
@@ -960,30 +693,18 @@
 
             async startRecording() {
                 try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ 
-                        audio: {
-                            echoCancellation: true,
-                            noiseSuppression: true,
-                            sampleRate: 44100
-                        }
-                    });
-                    
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                     this.audioStream = stream;
-                    this.audioRecorder = new MediaRecorder(stream, {
-                        mimeType: 'audio/webm;codecs=opus'
-                    });
+                    this.audioRecorder = new MediaRecorder(stream);
                     this.audioChunks = [];
 
                     this.audioRecorder.ondataavailable = (event) => {
-                        if (event.data.size > 0) {
-                            this.audioChunks.push(event.data);
-                        }
+                        this.audioChunks.push(event.data);
                     };
 
                     this.audioRecorder.onstop = () => {
                         this.recordedBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
                         this.updateRecordingUI(false);
-                        this.stopAudioStream();
                     };
 
                     this.audioRecorder.start();
@@ -991,8 +712,7 @@
                     this.updateRecordingUI(true);
 
                 } catch (error) {
-                    console.error('Erreur microphone:', error);
-                    alert('Erreur d\'accès au microphone: ' + error.message);
+                    alert('Erreur microphone: ' + error.message);
                 }
             }
 
@@ -1000,133 +720,51 @@
                 if (this.audioRecorder && this.isRecording) {
                     this.audioRecorder.stop();
                     this.isRecording = false;
-                }
-            }
-
-            stopAudioStream() {
-                if (this.audioStream) {
-                    this.audioStream.getTracks().forEach(track => track.stop());
-                    this.audioStream = null;
+                    if (this.audioStream) {
+                        this.audioStream.getTracks().forEach(track => track.stop());
+                    }
                 }
             }
 
             updateRecordingUI(recording) {
                 const recordBtn = document.getElementById('recordBtn');
                 const status = document.getElementById('recordingStatus');
-                const controls = document.getElementById('audioControls');
                 const sendBtn = document.getElementById('sendAudioBtn');
-
-                if (!recordBtn || !status || !controls || !sendBtn) return;
 
                 if (recording) {
                     recordBtn.textContent = '⏹️';
                     recordBtn.classList.add('recording');
-                    status.textContent = '🔴 Enregistrement en cours...';
-                    controls.classList.remove('show');
-                    
-                    // Masquer les contrôles upload pendant l'enregistrement
-                    const uploadedControls = document.getElementById('uploadedControls');
-                    if (uploadedControls) uploadedControls.style.display = 'none';
-                    
+                    status.textContent = '🔴 Enregistrement...';
                 } else {
                     recordBtn.textContent = '⏺️';
                     recordBtn.classList.remove('recording');
                     status.textContent = '✅ Enregistrement terminé';
-                    controls.classList.add('show');
                     sendBtn.classList.add('show');
-                    
-                    // Mettre à jour la source audio
-                    this.currentAudioSource = 'recorded';
-                    
-                    // Supprimer le fichier uploadé s'il y en avait un
-                    if (this.uploadedBlob) {
-                        this.removeUploadedFile();
-                    }
                 }
-            }
-
-            playRecording() {
-                if (this.recordedBlob) {
-                    const audioUrl = URL.createObjectURL(this.recordedBlob);
-                    const audio = new Audio(audioUrl);
-                    audio.play().catch(error => {
-                        console.error('Erreur lecture audio:', error);
-                    });
-                    
-                    audio.addEventListener('ended', () => {
-                        URL.revokeObjectURL(audioUrl);
-                    });
-                }
-            }
-
-            resetRecording() {
-                this.recordedBlob = null;
-                this.isRecording = false;
-                this.stopAudioStream();
-                
-                const recordBtn = document.getElementById('recordBtn');
-                const status = document.getElementById('recordingStatus');
-                const controls = document.getElementById('audioControls');
-                const sendBtn = document.getElementById('sendAudioBtn');
-
-                if (recordBtn) {
-                    recordBtn.textContent = '⏺️';
-                    recordBtn.classList.remove('recording');
-                }
-                if (status) status.textContent = 'Appuyer pour enregistrer';
-                if (controls) controls.classList.remove('show');
-                if (sendBtn) sendBtn.classList.remove('show');
             }
 
             async sendAudio() {
                 if (!this.recordedBlob) return;
 
+                console.log('Envoi audio vers N8n...');
+                
                 const sendBtn = document.getElementById('sendAudioBtn');
-                if (sendBtn) {
-                    sendBtn.disabled = true;
-                    sendBtn.textContent = '📤 Envoi en cours...';
-                }
+                sendBtn.disabled = true;
+                sendBtn.textContent = '📤 Envoi...';
 
                 try {
+                    // Convertir en base64
                     const audioBase64 = await this.blobToBase64(this.recordedBlob);
                     
-                    const brouillonId = 'brouillon_' + Date.now();
-                    const brouillon = {
-                        id: brouillonId,
-                        audioFile: this.recordedBlob,
-                        audioBase64: audioBase64,
-                        generatedReport: '',
-                        isModified: false,
-                        createdAt: new Date().toISOString(),
-                        status: 'generating',
-                        title: 'Génération en cours...'
-                    };
-
-                    this.addBrouillon(brouillon);
-                    this.resetRecording();
-
-                    await this.callN8nWebhook(audioBase64, brouillonId);
-
-                } catch (error) {
-                    console.error('Erreur envoi audio:', error);
-                    alert('Erreur lors de l\'envoi: ' + error.message);
-                } finally {
-                    if (sendBtn) {
-                        sendBtn.disabled = false;
-                        sendBtn.textContent = '📤 Envoyer le vocal';
-                    }
-                }
-            }
-
-            // APPEL N8N MODIFIÉ - VRAI APPEL AU LIEU DE SIMULATION
-            async callN8nWebhook(audioBase64, brouillonId) {
-                try {
                     const payload = {
                         audioData: audioBase64,
                         userId: this.currentUser.username,
                         timestamp: new Date().toISOString()
                     };
 
+                    console.log('Payload préparé, taille:', JSON.stringify(payload).length);
+
+                    // Test avec fetch
                     const response = await fetch(CONFIG.N8N_WEBHOOK_URL, {
                         method: 'POST',
                         headers: {
@@ -1135,408 +773,38 @@
                         body: JSON.stringify(payload)
                     });
 
-                    const result = await response.json();
-                    this.updateBrouillonWithReport(brouillonId, result.content);
+                    console.log('Réponse N8n:', response.status, response.statusText);
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log('Résultat N8n:', result);
+                        alert('✅ Envoi réussi !');
+                    } else {
+                        console.error('Erreur N8n:', await response.text());
+                        alert('❌ Erreur N8n: ' + response.status);
+                    }
 
                 } catch (error) {
-                    this.updateBrouillonStatus(brouillonId, 'error');
-                    throw error;
+                    console.error('Erreur envoi:', error);
+                    alert('❌ Erreur: ' + error.message);
+                } finally {
+                    sendBtn.disabled = false;
+                    sendBtn.textContent = '📤 Envoyer le vocal';
                 }
             }
 
             blobToBase64(blob) {
                 return new Promise((resolve, reject) => {
                     const reader = new FileReader();
-                    reader.onloadend = () => {
-                        const base64 = reader.result.split(',')[1];
-                        resolve(base64);
-                    };
+                    reader.onloadend = () => resolve(reader.result.split(',')[1]);
                     reader.onerror = reject;
                     reader.readAsDataURL(blob);
                 });
             }
-
-            // === GESTION DES BROUILLONS ===
-
-            getBrouillons() {
-                const saved = this.loadAppData();
-                return saved.brouillons || [];
-            }
-
-            addBrouillon(brouillon) {
-                const saved = this.loadAppData();
-                saved.brouillons = saved.brouillons || [];
-                saved.brouillons.unshift(brouillon);
-                
-                this.saveAppData(saved);
-                this.updateBrouillonsList(saved.brouillons);
-            }
-
-            updateBrouillonWithReport(brouillonId, reportContent) {
-                const saved = this.loadAppData();
-                const brouillon = saved.brouillons.find(b => b.id === brouillonId);
-                
-                if (brouillon) {
-                    brouillon.generatedReport = reportContent;
-                    brouillon.status = 'ready';
-                    brouillon.title = 'Rapport généré - En attente de validation';
-                    
-                    this.saveAppData(saved);
-                    this.updateBrouillonsList(saved.brouillons);
-                }
-            }
-
-            updateBrouillonStatus(brouillonId, status) {
-                const saved = this.loadAppData();
-                const brouillon = saved.brouillons.find(b => b.id === brouillonId);
-                
-                if (brouillon) {
-                    brouillon.status = status;
-                    if (status === 'error') {
-                        brouillon.title = 'Erreur lors de la génération';
-                    }
-                    
-                    this.saveAppData(saved);
-                    this.updateBrouillonsList(saved.brouillons);
-                }
-            }
-
-            updateBrouillonsList(brouillons) {
-                const container = document.getElementById('brouillonsList');
-                if (!container) return;
-                
-                if (!brouillons || brouillons.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <div class="icon">📄</div>
-                            <p>Aucun brouillon pour le moment</p>
-                            <p style="font-size: 14px; margin-top: 10px;">Enregistrez votre premier rapport vocal !</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                container.innerHTML = brouillons.map(brouillon => {
-                    const date = new Date(brouillon.createdAt).toLocaleString();
-                    let statusClass = '';
-                    let statusIcon = '📄';
-                    
-                    if (brouillon.status === 'generating') {
-                        statusClass = 'status-generating';
-                        statusIcon = '⏳';
-                    } else if (brouillon.status === 'error') {
-                        statusClass = 'status-error';
-                        statusIcon = '⚠️';
-                    }
-
-                    const content = brouillon.generatedReport || 'Génération en cours...';
-                    const truncatedContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
-
-                    return `
-                        <div class="report-item ${statusClass}">
-                            <div class="report-header">
-                                <div class="report-title">${statusIcon} ${brouillon.title || 'Nouveau rapport'}</div>
-                                <div class="report-date">${date}</div>
-                            </div>
-                            <div class="report-content">${truncatedContent}</div>
-                            <div class="report-actions">
-                                ${brouillon.status === 'ready' ? `
-                                    <button class="action-btn edit-btn" onclick="app.editBrouillon('${brouillon.id}')">✏️ Éditer</button>
-                                    <button class="action-btn validate-btn" onclick="app.validateBrouillon('${brouillon.id}')">✅ Valider</button>
-                                ` : ''}
-                                ${brouillon.status === 'generating' ? `
-                                    <div class="loading-spinner" style="display: inline-block; margin: 0;"></div>
-                                ` : ''}
-                                ${brouillon.status === 'error' ? `
-                                    <button class="action-btn edit-btn" onclick="app.retryBrouillon('${brouillon.id}')">🔄 Réessayer</button>
-                                ` : ''}
-                                <button class="action-btn delete-btn" onclick="app.deleteBrouillon('${brouillon.id}')">🗑️ Supprimer</button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            }
-
-            editBrouillon(brouillonId) {
-                const saved = this.loadAppData();
-                const brouillon = saved.brouillons.find(b => b.id === brouillonId);
-                
-                if (brouillon) {
-                    const newContent = prompt('Modifier le rapport:', brouillon.generatedReport);
-                    if (newContent !== null && newContent.trim() !== '') {
-                        brouillon.generatedReport = newContent.trim();
-                        brouillon.isModified = true;
-                        this.saveAppData(saved);
-                        this.updateBrouillonsList(saved.brouillons);
-                    }
-                }
-            }
-
-            validateBrouillon(brouillonId) {
-                if (!confirm('Valider ce rapport ? Il sera déplacé dans les rapports finalisés.')) {
-                    return;
-                }
-
-                const saved = this.loadAppData();
-                const brouillonIndex = saved.brouillons.findIndex(b => b.id === brouillonId);
-                
-                if (brouillonIndex !== -1) {
-                    const brouillon = saved.brouillons[brouillonIndex];
-                    
-                    const rapport = {
-                        id: 'rapport_' + Date.now(),
-                        title: `Rapport - ${new Date().toLocaleDateString()}`,
-                        content: brouillon.generatedReport,
-                        originalAudio: brouillon.audioBase64,
-                        validatedAt: new Date().toISOString(),
-                        createdAt: brouillon.createdAt,
-                        sharedWith: [],
-                        status: 'validated',
-                        isModified: brouillon.isModified
-                    };
-
-                    saved.rapports = saved.rapports || [];
-                    saved.rapports.unshift(rapport);
-                    saved.brouillons.splice(brouillonIndex, 1);
-                    
-                    this.saveAppData(saved);
-                    
-                    this.updateBrouillonsList(saved.brouillons);
-                    this.updateRapportsList(saved.rapports);
-                    
-                    alert('✅ Rapport validé avec succès !');
-                }
-            }
-
-            deleteBrouillon(brouillonId) {
-                if (!confirm('Supprimer définitivement ce brouillon ?')) {
-                    return;
-                }
-
-                const saved = this.loadAppData();
-                saved.brouillons = saved.brouillons.filter(b => b.id !== brouillonId);
-                
-                this.saveAppData(saved);
-                this.updateBrouillonsList(saved.brouillons);
-            }
-
-            retryBrouillon(brouillonId) {
-                this.updateBrouillonStatus(brouillonId, 'generating');
-                
-                const saved = this.loadAppData();
-                const brouillon = saved.brouillons.find(b => b.id === brouillonId);
-                
-                if (brouillon && brouillon.audioBase64) {
-                    this.callN8nWebhook(brouillon.audioBase64, brouillonId);
-                }
-            }
-
-            // === GESTION DES RAPPORTS ===
-
-            getRapports() {
-                const saved = this.loadAppData();
-                return saved.rapports || [];
-            }
-
-            updateRapportsList(rapports) {
-                const container = document.getElementById('rapportsList');
-                const counter = document.getElementById('rapportsCount');
-                
-                if (counter) {
-                    counter.textContent = rapports ? rapports.length : 0;
-                }
-                
-                if (!container) return;
-                
-                if (!rapports || rapports.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <div class="icon">📋</div>
-                            <p>Aucun rapport finalisé</p>
-                            <p style="font-size: 14px; margin-top: 10px;">Validez vos brouillons pour les voir ici !</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                container.innerHTML = rapports.map(rapport => {
-                    const dateValidated = new Date(rapport.validatedAt).toLocaleDateString();
-                    const truncatedContent = rapport.content.length > 150 ? 
-                        rapport.content.substring(0, 150) + '...' : 
-                        rapport.content;
-                    
-                    return `
-                        <div class="report-item">
-                            <div class="report-header">
-                                <div class="report-title">📋 ${rapport.title}</div>
-                                <div class="report-date">Validé le ${dateValidated}</div>
-                            </div>
-                            <div class="report-content">${truncatedContent}</div>
-                            <div class="report-actions">
-                                <button class="action-btn view-btn" onclick="app.viewRapport('${rapport.id}')">👁️ Consulter</button>
-                                <button class="action-btn share-btn" onclick="app.shareRapport('${rapport.id}')">📤 Partager</button>
-                                <button class="action-btn export-btn" onclick="app.exportRapport('${rapport.id}')">💾 Exporter</button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            }
-
-            filterRapports(searchTerm) {
-                const saved = this.loadAppData();
-                const rapports = saved.rapports || [];
-                
-                if (!searchTerm) {
-                    this.updateRapportsList(rapports);
-                    return;
-                }
-
-                const filtered = rapports.filter(rapport => 
-                    rapport.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    rapport.content.toLowerCase().includes(searchTerm.toLowerCase())
-                );
-                
-                this.updateRapportsList(filtered);
-            }
-
-            viewRapport(rapportId) {
-                const saved = this.loadAppData();
-                const rapport = saved.rapports.find(r => r.id === rapportId);
-                
-                if (rapport) {
-                    const modal = document.createElement('div');
-                    modal.style.cssText = `
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background: rgba(0,0,0,0.5);
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        z-index: 1000;
-                    `;
-                    
-                    modal.innerHTML = `
-                        <div style="
-                            background: white;
-                            padding: 20px;
-                            border-radius: 10px;
-                            max-width: 90%;
-                            max-height: 80%;
-                            overflow-y: auto;
-                        ">
-                            <h3>${rapport.title}</h3>
-                            <hr style="margin: 15px 0;">
-                            <pre style="white-space: pre-wrap; font-family: inherit;">${rapport.content}</pre>
-                            <br>
-                            <button onclick="this.parentElement.parentElement.remove()" 
-                                    style="background: #f44336; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
-                                Fermer
-                            </button>
-                        </div>
-                    `;
-                    
-                    document.body.appendChild(modal);
-                    
-                    modal.addEventListener('click', (e) => {
-                        if (e.target === modal) {
-                            modal.remove();
-                        }
-                    });
-                }
-            }
-
-            shareRapport(rapportId) {
-                const saved = this.loadAppData();
-                const rapport = saved.rapports.find(r => r.id === rapportId);
-                
-                if (rapport) {
-                    if (navigator.share) {
-                        navigator.share({
-                            title: rapport.title,
-                            text: rapport.content
-                        }).catch(console.error);
-                    } else {
-                        if (navigator.clipboard) {
-                            navigator.clipboard.writeText(rapport.content).then(() => {
-                                alert('📋 Rapport copié dans le presse-papier !');
-                            }).catch(() => {
-                                this.fallbackCopyToClipboard(rapport.content);
-                            });
-                        } else {
-                            this.fallbackCopyToClipboard(rapport.content);
-                        }
-                    }
-                }
-            }
-
-            fallbackCopyToClipboard(text) {
-                const textArea = document.createElement('textarea');
-                textArea.value = text;
-                document.body.appendChild(textArea);
-                textArea.focus();
-                textArea.select();
-                try {
-                    document.execCommand('copy');
-                    alert('📋 Rapport copié dans le presse-papier !');
-                } catch (err) {
-                    alert('Impossible de copier le rapport');
-                }
-                document.body.removeChild(textArea);
-            }
-
-            exportRapport(rapportId) {
-                const saved = this.loadAppData();
-                const rapport = saved.rapports.find(r => r.id === rapportId);
-                
-                if (rapport) {
-                    try {
-                        const blob = new Blob([rapport.content], { type: 'text/plain;charset=utf-8' });
-                        const url = URL.createObjectURL(blob);
-                        
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `${rapport.title}.txt`;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                    } catch (error) {
-                        console.error('Erreur export:', error);
-                        alert('Erreur lors de l\'export du rapport');
-                    }
-                }
-            }
         }
 
-        // Variable globale pour l'application
-        let app;
-        
-        // Initialisation de l'application
-        document.addEventListener('DOMContentLoaded', function() {
-            app = new AppManager();
-        });
-
-        window.addEventListener('beforeunload', function() {
-            if (app) {
-                app.stopAudioStream();
-            }
-        });
-
-        // Service Worker pour PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then(function(registration) {
-                        console.log('ServiceWorker registration successful');
-                    })
-                    .catch(function(err) {
-                        console.log('ServiceWorker registration failed: ', err);
-                    });
-            });
-        }
+        // Initialisation
+        const app = new AppManager();
     </script>
 </body>
 </html>
