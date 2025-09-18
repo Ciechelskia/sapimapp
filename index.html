@@ -603,7 +603,7 @@
     </div>
 
     <script>
-        // Configuration globale - SEULES LIGNES MODIFIÉES
+        // Configuration globale
         const CONFIG = {
             N8N_WEBHOOK_URL: 'https://andreaprogra.app.n8n.cloud/webhook-test/88303112-848e-4b93-8758-5c2b16ecc52e',
             APP_VERSION: '1.0.0'
@@ -708,7 +708,7 @@
                 }
             }
 
-            // MÉTHODE SHOW PAGE - CONSERVÉE DE L'ORIGINAL
+            // Affichage des pages
             showPage(pageId) {
                 // Masquer TOUTES les pages
                 ['loginPage', 'brouillonPage', 'rapportsPage'].forEach(id => {
@@ -864,7 +864,7 @@
                     const deviceId = this.generateDeviceId();
                     
                     if (user.deviceId && user.deviceId !== deviceId) {
-                        throw new Error(`⚠️ Accès refusé\n\nCe compte est déjà lié à un autre appareil.\n\nPour changer d'appareil, contactez :\n- Email: admin@entreprise.com\n- Tel: 01.XX.XX.XX.XX\n\nVotre demande sera traitée sous 24h.`);
+                        throw new Error(`Accès refusé - Ce compte est déjà lié à un autre appareil. Contactez l'administrateur.`);
                     }
 
                     // Premier login = enregistrement du device
@@ -941,7 +941,7 @@
                 this.showPage(PAGES.LOGIN);
             }
 
-            // === GESTION AUDIO ===
+            // === GESTION AUDIO - VERSION CORRIGÉE ===
 
             async toggleRecording() {
                 if (this.isRecording) {
@@ -962,9 +962,32 @@
                     });
                     
                     this.audioStream = stream;
-                    this.audioRecorder = new MediaRecorder(stream, {
-                        mimeType: 'audio/webm;codecs=opus'
-                    });
+
+                    // Détection automatique du meilleur format supporté
+                    let options = {};
+                    
+                    // Tests des formats par ordre de préférence
+                    const formats = [
+                        'audio/mp4',                    // Safari préféré
+                        'audio/mp4;codecs=mp4a.40.2',  // Safari alternatif
+                        'audio/webm;codecs=opus',       // Chrome/Firefox
+                        'audio/webm',                   // Fallback WebM
+                        'audio/ogg;codecs=opus',        // Firefox alternatif
+                    ];
+                    
+                    let selectedFormat = null;
+                    for (const format of formats) {
+                        if (MediaRecorder.isTypeSupported(format)) {
+                            selectedFormat = format;
+                            options = { mimeType: format };
+                            break;
+                        }
+                    }
+                    
+                    console.log('Format audio sélectionné:', selectedFormat || 'Défaut du navigateur');
+                    
+                    // Si aucun format spécifique n'est supporté, utilise les paramètres par défaut
+                    this.audioRecorder = new MediaRecorder(stream, options);
                     this.audioChunks = [];
 
                     this.audioRecorder.ondataavailable = (event) => {
@@ -974,7 +997,12 @@
                     };
 
                     this.audioRecorder.onstop = () => {
-                        this.recordedBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+                        // Utilise le type détecté ou un fallback
+                        const blobType = selectedFormat || 'audio/wav';
+                        this.recordedBlob = new Blob(this.audioChunks, { type: blobType });
+                        
+                        console.log('Blob créé:', this.recordedBlob.size, 'bytes, type:', blobType);
+                        
                         this.updateRecordingUI(false);
                         this.stopAudioStream();
                     };
@@ -982,10 +1010,25 @@
                     this.audioRecorder.start();
                     this.isRecording = true;
                     this.updateRecordingUI(true);
+                    
+                    console.log('Enregistrement démarré avec succès');
 
                 } catch (error) {
                     console.error('Erreur microphone:', error);
-                    alert('Erreur d\'accès au microphone: ' + error.message);
+                    
+                    // Messages d'erreur plus spécifiques
+                    let errorMessage = 'Erreur d\'accès au microphone: ';
+                    if (error.name === 'NotAllowedError') {
+                        errorMessage += 'Permission refusée. Autorisez l\'accès au microphone.';
+                    } else if (error.name === 'NotFoundError') {
+                        errorMessage += 'Aucun microphone détecté.';
+                    } else if (error.name === 'NotSupportedError') {
+                        errorMessage += 'Enregistrement audio non supporté par ce navigateur.';
+                    } else {
+                        errorMessage += error.message;
+                    }
+                    
+                    alert(errorMessage);
                 }
             }
 
@@ -1060,7 +1103,10 @@
             }
 
             async sendAudio() {
-                if (!this.recordedBlob) return;
+                if (!this.recordedBlob) {
+                    console.log('Pas d\'audio enregistré');
+                    return;
+                }
 
                 const sendBtn = document.getElementById('sendAudioBtn');
                 if (sendBtn) {
@@ -1069,7 +1115,11 @@
                 }
 
                 try {
+                    console.log('=== DÉBUT ENVOI AUDIO ===');
+                    console.log('Taille blob:', this.recordedBlob.size, 'bytes');
+                    
                     const audioBase64 = await this.blobToBase64(this.recordedBlob);
+                    console.log('Conversion base64 réussie, taille:', audioBase64.length, 'caractères');
                     
                     const brouillonId = 'brouillon_' + Date.now();
                     const brouillon = {
@@ -1086,11 +1136,12 @@
                     this.addBrouillon(brouillon);
                     this.resetRecording();
 
-                    // APPEL N8N RÉEL - SEULE MODIFICATION MAJEURE
+                    console.log('Appel N8n...');
                     await this.callN8nWebhook(audioBase64, brouillonId);
+                    console.log('=== ENVOI AUDIO TERMINÉ ===');
 
                 } catch (error) {
-                    console.error('Erreur envoi audio:', error);
+                    console.error('Erreur dans sendAudio:', error);
                     alert('Erreur lors de l\'envoi: ' + error.message);
                 } finally {
                     if (sendBtn) {
@@ -1100,10 +1151,9 @@
                 }
             }
 
-            // APPEL N8N - REMPLACEMENT DE LA SIMULATION
             async callN8nWebhook(audioBase64, brouillonId) {
                 try {
-                    console.log('=== ENVOI VERS N8N ===');
+                    console.log('=== APPEL N8N WEBHOOK ===');
                     const payload = {
                         audioData: audioBase64,
                         userId: this.currentUser.username,
@@ -1111,7 +1161,7 @@
                     };
 
                     console.log('URL N8n:', CONFIG.N8N_WEBHOOK_URL);
-                    console.log('Payload size:', JSON.stringify(payload).length);
+                    console.log('Payload size:', JSON.stringify(payload).length, 'caractères');
 
                     const response = await fetch(CONFIG.N8N_WEBHOOK_URL, {
                         method: 'POST',
@@ -1122,20 +1172,20 @@
                     });
 
                     console.log('Response status:', response.status);
-                    console.log('Response headers:', [...response.headers.entries()]);
+                    console.log('Response ok:', response.ok);
 
                     if (response.ok) {
                         const result = await response.json();
-                        console.log('N8n result:', result);
+                        console.log('N8n success result:', result);
                         this.updateBrouillonWithReport(brouillonId, result.content || 'Rapport reçu de N8n');
                     } else {
                         const errorText = await response.text();
-                        console.error('N8n error:', errorText);
-                        throw new Error(`N8n error: ${response.status} - ${errorText}`);
+                        console.error('N8n HTTP error:', response.status, errorText);
+                        throw new Error(`N8n HTTP ${response.status}: ${errorText}`);
                     }
 
                 } catch (error) {
-                    console.error('Erreur appel N8n:', error);
+                    console.error('Exception dans callN8nWebhook:', error);
                     this.updateBrouillonStatus(brouillonId, 'error');
                     throw error;
                 }
