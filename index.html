@@ -95,7 +95,7 @@
             background: #d32f2f;
         }
 
-        /* PAGE CONTENT */
+        /* PAGE CONTENT - IMPORTANTE CORRECTION */
         .page {
             display: none;
             flex: 1;
@@ -603,7 +603,7 @@
     </div>
 
     <script>
-        // Configuration globale - SEULES LIGNES MODIFIÉES
+        // Configuration globale - URL N8N MODIFIÉE
         const CONFIG = {
             N8N_WEBHOOK_URL: 'https://andreaprogra.app.n8n.cloud/webhook-test/488301f2-8446-4bd3-8758-5c2b6ecc52e',
             APP_VERSION: '1.0.0'
@@ -708,24 +708,31 @@
                 }
             }
 
-            // MÉTHODE SHOW PAGE - CONSERVÉE DE L'ORIGINAL
+            // NOUVELLE MÉTHODE SHOW PAGE - SIMPLE ET EFFICACE
             showPage(pageId) {
                 // Masquer TOUTES les pages
-                ['loginPage', 'brouillonPage', 'rapportsPage'].forEach(id => {
+                Object.values(PAGES).forEach(id => {
                     const page = document.getElementById(id);
-                    if (page) page.style.display = 'none';
+                    if (page) {
+                        page.style.display = 'none';
+                    }
                 });
 
                 // Afficher SEULEMENT la page demandée
-                if (pageId === 'loginPage' && !this.currentUser) {
-                    const loginPage = document.getElementById('loginPage');
-                    if (loginPage) loginPage.style.display = 'block';
-                    const header = document.getElementById('header');
+                const targetPage = document.getElementById(pageId);
+                const header = document.getElementById('header');
+
+                if (pageId === PAGES.LOGIN) {
+                    // Afficher login SEULEMENT si pas connecté
+                    if (!this.currentUser && targetPage) {
+                        targetPage.style.display = 'block';
+                    }
                     if (header) header.style.display = 'none';
-                } else if (this.currentUser) {
-                    const targetPage = document.getElementById(pageId);
-                    if (targetPage) targetPage.style.display = 'block';
-                    const header = document.getElementById('header');
+                } else {
+                    // Afficher les autres pages seulement si connecté
+                    if (this.currentUser && targetPage) {
+                        targetPage.style.display = 'block';
+                    }
                     if (header) header.style.display = 'flex';
                 }
 
@@ -1016,13 +1023,25 @@
                     recordBtn.classList.add('recording');
                     status.textContent = '🔴 Enregistrement en cours...';
                     controls.classList.remove('show');
-                    sendBtn.classList.remove('show');
+                    
+                    // Masquer les contrôles upload pendant l'enregistrement
+                    const uploadedControls = document.getElementById('uploadedControls');
+                    if (uploadedControls) uploadedControls.style.display = 'none';
+                    
                 } else {
                     recordBtn.textContent = '⏺️';
                     recordBtn.classList.remove('recording');
                     status.textContent = '✅ Enregistrement terminé';
                     controls.classList.add('show');
                     sendBtn.classList.add('show');
+                    
+                    // Mettre à jour la source audio
+                    this.currentAudioSource = 'recorded';
+                    
+                    // Supprimer le fichier uploadé s'il y en avait un
+                    if (this.uploadedBlob) {
+                        this.removeUploadedFile();
+                    }
                 }
             }
 
@@ -1086,7 +1105,6 @@
                     this.addBrouillon(brouillon);
                     this.resetRecording();
 
-                    // APPEL N8N RÉEL - SEULE MODIFICATION MAJEURE
                     await this.callN8nWebhook(audioBase64, brouillonId);
 
                 } catch (error) {
@@ -1100,18 +1118,14 @@
                 }
             }
 
-            // APPEL N8N - REMPLACEMENT DE LA SIMULATION
+            // APPEL N8N MODIFIÉ - VRAI APPEL AU LIEU DE SIMULATION
             async callN8nWebhook(audioBase64, brouillonId) {
                 try {
-                    console.log('=== ENVOI VERS N8N ===');
                     const payload = {
                         audioData: audioBase64,
                         userId: this.currentUser.username,
                         timestamp: new Date().toISOString()
                     };
-
-                    console.log('URL N8n:', CONFIG.N8N_WEBHOOK_URL);
-                    console.log('Payload size:', JSON.stringify(payload).length);
 
                     const response = await fetch(CONFIG.N8N_WEBHOOK_URL, {
                         method: 'POST',
@@ -1121,21 +1135,10 @@
                         body: JSON.stringify(payload)
                     });
 
-                    console.log('Response status:', response.status);
-                    console.log('Response headers:', [...response.headers.entries()]);
-
-                    if (response.ok) {
-                        const result = await response.json();
-                        console.log('N8n result:', result);
-                        this.updateBrouillonWithReport(brouillonId, result.content || 'Rapport reçu de N8n');
-                    } else {
-                        const errorText = await response.text();
-                        console.error('N8n error:', errorText);
-                        throw new Error(`N8n error: ${response.status} - ${errorText}`);
-                    }
+                    const result = await response.json();
+                    this.updateBrouillonWithReport(brouillonId, result.content);
 
                 } catch (error) {
-                    console.error('Erreur appel N8n:', error);
                     this.updateBrouillonStatus(brouillonId, 'error');
                     throw error;
                 }
@@ -1254,7 +1257,6 @@
                 }).join('');
             }
 
-            // Fonctions utilitaires pour les brouillons
             editBrouillon(brouillonId) {
                 const saved = this.loadAppData();
                 const brouillon = saved.brouillons.find(b => b.id === brouillonId);
@@ -1331,6 +1333,11 @@
 
             // === GESTION DES RAPPORTS ===
 
+            getRapports() {
+                const saved = this.loadAppData();
+                return saved.rapports || [];
+            }
+
             updateRapportsList(rapports) {
                 const container = document.getElementById('rapportsList');
                 const counter = document.getElementById('rapportsCount');
@@ -1365,6 +1372,11 @@
                                 <div class="report-date">Validé le ${dateValidated}</div>
                             </div>
                             <div class="report-content">${truncatedContent}</div>
+                            <div class="report-actions">
+                                <button class="action-btn view-btn" onclick="app.viewRapport('${rapport.id}')">👁️ Consulter</button>
+                                <button class="action-btn share-btn" onclick="app.shareRapport('${rapport.id}')">📤 Partager</button>
+                                <button class="action-btn export-btn" onclick="app.exportRapport('${rapport.id}')">💾 Exporter</button>
+                            </div>
                         </div>
                     `;
                 }).join('');
@@ -1385,6 +1397,117 @@
                 );
                 
                 this.updateRapportsList(filtered);
+            }
+
+            viewRapport(rapportId) {
+                const saved = this.loadAppData();
+                const rapport = saved.rapports.find(r => r.id === rapportId);
+                
+                if (rapport) {
+                    const modal = document.createElement('div');
+                    modal.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.5);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        z-index: 1000;
+                    `;
+                    
+                    modal.innerHTML = `
+                        <div style="
+                            background: white;
+                            padding: 20px;
+                            border-radius: 10px;
+                            max-width: 90%;
+                            max-height: 80%;
+                            overflow-y: auto;
+                        ">
+                            <h3>${rapport.title}</h3>
+                            <hr style="margin: 15px 0;">
+                            <pre style="white-space: pre-wrap; font-family: inherit;">${rapport.content}</pre>
+                            <br>
+                            <button onclick="this.parentElement.parentElement.remove()" 
+                                    style="background: #f44336; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                                Fermer
+                            </button>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(modal);
+                    
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            modal.remove();
+                        }
+                    });
+                }
+            }
+
+            shareRapport(rapportId) {
+                const saved = this.loadAppData();
+                const rapport = saved.rapports.find(r => r.id === rapportId);
+                
+                if (rapport) {
+                    if (navigator.share) {
+                        navigator.share({
+                            title: rapport.title,
+                            text: rapport.content
+                        }).catch(console.error);
+                    } else {
+                        if (navigator.clipboard) {
+                            navigator.clipboard.writeText(rapport.content).then(() => {
+                                alert('📋 Rapport copié dans le presse-papier !');
+                            }).catch(() => {
+                                this.fallbackCopyToClipboard(rapport.content);
+                            });
+                        } else {
+                            this.fallbackCopyToClipboard(rapport.content);
+                        }
+                    }
+                }
+            }
+
+            fallbackCopyToClipboard(text) {
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    alert('📋 Rapport copié dans le presse-papier !');
+                } catch (err) {
+                    alert('Impossible de copier le rapport');
+                }
+                document.body.removeChild(textArea);
+            }
+
+            exportRapport(rapportId) {
+                const saved = this.loadAppData();
+                const rapport = saved.rapports.find(r => r.id === rapportId);
+                
+                if (rapport) {
+                    try {
+                        const blob = new Blob([rapport.content], { type: 'text/plain;charset=utf-8' });
+                        const url = URL.createObjectURL(blob);
+                        
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${rapport.title}.txt`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    } catch (error) {
+                        console.error('Erreur export:', error);
+                        alert('Erreur lors de l\'export du rapport');
+                    }
+                }
             }
         }
 
