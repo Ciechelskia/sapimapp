@@ -245,7 +245,7 @@ class DataManager {
                 `,
                 [
                     pdfButton,
-                    { text: '📤 Partager', class: 'btn-primary', onclick: `window.dataManager.shareRapport('${rapportId}'); this.closest('[data-modal]').remove();` },
+                    { text: rapport.hasPdf ? '📎 Partager PDF' : '📤 Partager texte', class: 'btn-primary', onclick: `window.dataManager.shareRapport('${rapportId}'); this.closest('[data-modal]').remove();` },
                     { text: 'Fermer', class: 'btn-secondary', onclick: 'this.closest("[data-modal]").remove()' }
                 ]
             );
@@ -256,20 +256,96 @@ class DataManager {
         const data = this.loadAppData();
         const rapport = data.rapports.find(r => r.id === rapportId);
         
-        if (rapport) {
-            const shareText = `${rapport.title}\n\n${rapport.content}`;
-            
-            // Tentative de partage natif
-            const shared = await Utils.shareContent(rapport.title, shareText);
-            
-            if (!shared) {
-                // Fallback : copie dans le presse-papier
-                const copied = await Utils.copyToClipboard(shareText);
-                if (copied) {
-                    Utils.showToast('Rapport copié dans le presse-papier', 'success');
-                } else {
-                    Utils.showToast('Erreur lors du partage', 'error');
+        if (!rapport) return;
+        
+        // Si le rapport a un PDF, partager le PDF
+        if (rapport.hasPdf && rapport.pdfData) {
+            try {
+                // Conversion du data URI en blob PDF
+                const byteCharacters = atob(rapport.pdfData.split(',')[1]);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
                 }
+                const byteArray = new Uint8Array(byteNumbers);
+                const pdfBlob = new Blob([byteArray], { type: 'application/pdf' });
+                
+                // Création du fichier pour le partage
+                const filename = `${rapport.title.replace(/[^a-z0-9]/gi, '_')}.pdf`;
+                
+                // Tentative de partage natif avec fichier (Web Share API Level 2)
+                if (navigator.share && navigator.canShare) {
+                    const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+                    
+                    if (navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            title: rapport.title,
+                            text: `Rapport commercial : ${rapport.title}`,
+                            files: [file]
+                        });
+                        Utils.showToast('PDF partagé avec succès', 'success');
+                        return;
+                    }
+                }
+                
+                // Fallback : Création d'un lien mailto avec le PDF encodé
+                const pdfBase64 = rapport.pdfData.split(',')[1];
+                
+                // Pour les emails, on créé un lien de téléchargement temporaire
+                const pdfUrl = URL.createObjectURL(pdfBlob);
+                
+                // Création du contenu email
+                const emailSubject = encodeURIComponent(`Rapport commercial : ${rapport.title}`);
+                const emailBody = encodeURIComponent(
+                    `Bonjour,\n\nVeuillez trouver ci-joint le rapport commercial : ${rapport.title}\n\n` +
+                    `Généré le : ${Utils.formatDate(rapport.validatedAt)}\n\n` +
+                    `Le PDF est disponible en téléchargement : ${pdfUrl}\n\n` +
+                    `Cordialement`
+                );
+                
+                // Ouverture du client email
+                const mailtoLink = `mailto:?subject=${emailSubject}&body=${emailBody}`;
+                window.open(mailtoLink, '_blank');
+                
+                // Démarrer le téléchargement automatique du PDF
+                const a = document.createElement('a');
+                a.href = pdfUrl;
+                a.download = filename;
+                a.click();
+                
+                // Nettoyer l'URL après 5 secondes
+                setTimeout(() => URL.revokeObjectURL(pdfUrl), 5000);
+                
+                Utils.showToast('Email créé avec PDF en téléchargement', 'success');
+                
+            } catch (error) {
+                console.error('Erreur lors du partage PDF:', error);
+                Utils.showToast('Erreur lors du partage du PDF', 'error');
+                
+                // Fallback vers le partage texte
+                this.shareRapportAsText(rapport);
+            }
+        } else {
+            // Pas de PDF disponible, partage texte
+            Utils.showToast('PDF non disponible, partage du texte', 'info');
+            this.shareRapportAsText(rapport);
+        }
+    }
+
+    // Nouvelle méthode pour le partage texte (fallback)
+    async shareRapportAsText(rapport) {
+        const shareText = `${rapport.title}\n\n${rapport.content}`;
+        
+        // Tentative de partage natif
+        const shared = await Utils.shareContent(rapport.title, shareText);
+        
+        if (!shared) {
+            // Fallback : copie dans le presse-papier
+            const copied = await Utils.copyToClipboard(shareText);
+            if (copied) {
+                Utils.showToast('Rapport copié dans le presse-papier', 'success');
+            } else {
+                Utils.showToast('Erreur lors du partage', 'error');
             }
         }
     }
