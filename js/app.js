@@ -1,4 +1,5 @@
 // Application principale - Gestion de l'authentification et navigation
+// MODIFIÉE POUR UTILISER GOOGLE SHEETS
 class AppManager {
     constructor() {
         this.currentUser = null;
@@ -7,6 +8,7 @@ class AppManager {
         // Initialisation des managers
         this.audioManager = new AudioManager();
         this.dataManager = new DataManager();
+        this.sheetsManager = new GoogleSheetsManager(); // NOUVEAU: Gestionnaire Google Sheets
         
         // Exposition globale pour les événements
         window.dataManager = this.dataManager;
@@ -24,6 +26,23 @@ class AppManager {
         
         // Ajout des styles CSS pour les animations toast
         this.addToastStyles();
+        
+        // NOUVEAU: Pré-chargement des utilisateurs depuis Google Sheets
+        this.preloadUsers();
+    }
+
+    // NOUVEAU: Pré-charge les utilisateurs pour améliorer les performances
+    async preloadUsers() {
+        try {
+            console.log('Pré-chargement des utilisateurs depuis Google Sheets...');
+            await this.sheetsManager.getUsers();
+            
+            // Affichage des statistiques en console (optionnel)
+            const stats = await this.sheetsManager.getUserStats();
+            console.log('Statistiques utilisateurs:', stats);
+        } catch (error) {
+            console.warn('Erreur lors du pré-chargement des utilisateurs:', error);
+        }
     }
 
     addToastStyles() {
@@ -134,7 +153,7 @@ class AppManager {
         }
     }
 
-    // === AUTHENTIFICATION ===
+    // === AUTHENTIFICATION MODIFIÉE ===
 
     async handleLogin() {
         const usernameEl = document.getElementById('username');
@@ -160,21 +179,17 @@ class AppManager {
         if (loginBtn) loginBtn.disabled = true;
 
         try {
-            // Simulation délai réseau
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            // Vérification utilisateur
-            const user = USERS_DB.find(u => u.username === username && u.password === password);
+            // NOUVEAU: Authentification via Google Sheets
+            console.log('Authentification via Google Sheets...');
+            const authResult = await this.sheetsManager.authenticateUser(username, password);
             
-            if (!user) {
-                throw new Error('Identifiants incorrects');
+            if (!authResult.success) {
+                throw new Error(authResult.error);
             }
 
-            if (!user.isActive) {
-                throw new Error('Compte désactivé. Contactez l\'administrateur.');
-            }
+            const user = authResult.user;
 
-            // Vérification Device ID
+            // Vérification Device ID (comme avant)
             const deviceId = Utils.generateDeviceId();
             
             if (user.deviceId && user.deviceId !== deviceId) {
@@ -183,9 +198,14 @@ class AppManager {
 
             // Premier login = enregistrement du device
             if (!user.deviceId) {
+                // NOUVEAU: Mise à jour du device ID via le gestionnaire
+                await this.sheetsManager.updateUserDeviceId(username, deviceId);
                 user.deviceId = deviceId;
                 console.log(`Device enregistré pour ${username}: ${deviceId}`);
             }
+
+            // NOUVEAU: Mise à jour de la dernière connexion
+            await this.sheetsManager.updateLastConnection(username);
 
             // Connexion réussie
             this.currentUser = {
@@ -198,6 +218,7 @@ class AppManager {
             Utils.showToast(`Bienvenue ${this.currentUser.nom}`, 'success');
 
         } catch (error) {
+            console.error('Erreur lors de l\'authentification:', error);
             this.showError(error.message);
         } finally {
             if (loadingDiv) loadingDiv.style.display = 'none';
@@ -272,6 +293,22 @@ class AppManager {
         return this.audioManager;
     }
 
+    // NOUVEAU: Accès au gestionnaire Google Sheets
+    getSheetsManager() {
+        return this.sheetsManager;
+    }
+
+    // NOUVEAU: Force la mise à jour des utilisateurs
+    async refreshUsers() {
+        try {
+            await this.sheetsManager.refreshCache();
+            Utils.showToast('Liste des utilisateurs mise à jour', 'success');
+        } catch (error) {
+            console.error('Erreur lors de la mise à jour:', error);
+            Utils.showToast('Erreur lors de la mise à jour', 'error');
+        }
+    }
+
     // Redirection pour compatibilité
     editBrouillon(id) { return this.dataManager.editBrouillon(id); }
     validateBrouillon(id) { return this.dataManager.validateBrouillon(id); }
@@ -283,7 +320,7 @@ class AppManager {
     downloadPDF(id) { return this.dataManager.downloadPDF(id); }
 }
 
-// === INITIALISATION ===
+// === INITIALISATION MODIFIÉE ===
 
 // Initialisation de l'application
 document.addEventListener('DOMContentLoaded', function() {
@@ -298,10 +335,16 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
+    // NOUVEAU: Vérification du gestionnaire Google Sheets
+    if (typeof GoogleSheetsManager === 'undefined') {
+        console.error('GoogleSheetsManager non défini. Vérifiez que google-sheets-manager.js est chargé.');
+        return;
+    }
+
     // Initialisation de l'app
     try {
         window.appManager = new AppManager();
-        console.log('Application initialisée avec succès');
+        console.log('Application initialisée avec succès (Google Sheets activé)');
     } catch (error) {
         console.error('Erreur lors de l\'initialisation:', error);
     }
@@ -322,6 +365,13 @@ window.addEventListener('error', function(event) {
         Utils.showToast('Une erreur inattendue s\'est produite', 'error');
     }
 });
+
+// NOUVEAU: Fonction pour forcer la mise à jour des utilisateurs
+window.refreshUsers = function() {
+    if (window.appManager) {
+        window.appManager.refreshUsers();
+    }
+};
 
 // Exposition globale pour les événements onclick (compatibilité)
 window.editBrouillon = function(id) { 
