@@ -2,7 +2,7 @@
 class GoogleSheetsManager {
     constructor() {
         // REMPLACEZ CET ID PAR L'ID DE VOTRE GOOGLE SHEETS
-        this.SHEET_ID = 'https://docs.google.com/spreadsheets/d/1I2SdNqwVB3bU-h3GoYvKjPRm2WhjpPdPc77rJKML9KE/edit';
+        this.SHEET_ID = '1f2SdNqwV83bU-h3OoVvkJPRm2WnJpPqPz7r3KML9KE';
         this.SHEET_NAME = 'Feuille1'; // Nom de votre feuille (généralement "Feuille1")
         this.cache = {
             users: [],
