@@ -228,9 +228,7 @@ class DataManager {
         const rapport = data.rapports.find(r => r.id === rapportId);
         
         if (rapport) {
-            const pdfButton = rapport.hasPdf ? 
-                `<button class="btn-primary" onclick="window.dataManager.downloadPDF('${rapportId}')" style="margin-right: 10px;">📄 Télécharger PDF</button>` : '';
-            
+            // CORRECTION : Suppression de tous les boutons, seulement la croix pour fermer
             const modal = Utils.createModal(
                 `📋 ${rapport.title}`,
                 `
@@ -243,11 +241,7 @@ class DataManager {
                         ${Utils.escapeHtml(rapport.content)}
                     </div>
                 `,
-                [
-                    pdfButton,
-                    { text: rapport.hasPdf ? '📎 Partager PDF' : '📤 Partager texte', class: 'btn-primary', onclick: `window.dataManager.shareRapport('${rapportId}'); this.closest('[data-modal]').remove();` },
-                    { text: 'Fermer', class: 'btn-secondary', onclick: 'this.closest("[data-modal]").remove()' }
-                ]
+                [] // Pas de boutons, seulement la croix pour fermer
             );
         }
     }

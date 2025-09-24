@@ -169,6 +169,11 @@ class AudioManager {
         this.updateUploadStatus('');
         this.uploadBtn.classList.remove('active');
         
+        // CORRECTION : Reset du file input pour permettre la réutilisation
+        if (this.audioFileInput) {
+            this.audioFileInput.value = '';
+        }
+        
         if (this.recordingStatus) {
             this.recordingStatus.textContent = 'Appuyer pour enregistrer';
         }
@@ -191,12 +196,16 @@ class AudioManager {
         // Validation du type de fichier
         if (!Utils.isValidAudioFile(file)) {
             Utils.showToast('Format de fichier non supporté', 'error');
+            // Reset du file input même en cas d'erreur
+            event.target.value = '';
             return;
         }
 
         // Validation de la taille
         if (!Utils.isValidFileSize(file)) {
             Utils.showToast(`Fichier trop volumineux (max: ${Utils.formatFileSize(CONFIG.MAX_FILE_SIZE)})`, 'error');
+            // Reset du file input même en cas d'erreur
+            event.target.value = '';
             return;
         }
 
@@ -221,6 +230,9 @@ class AudioManager {
         }
 
         Utils.showToast('Fichier audio chargé avec succès', 'success');
+        
+        // CORRECTION : Reset du file input pour permettre la réutilisation
+        event.target.value = '';
     }
 
     // === ENVOI AUDIO ===
