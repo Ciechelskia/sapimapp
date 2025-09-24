@@ -3,16 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-translate="appTitle">Rapports Commerciaux</title>
+    <title>Rapports Commerciaux</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2196F3">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <!-- Sélecteur de langue -->
-    <div id="languageSelector"></div>
-
     <div class="container">
         <!-- HEADER -->
         <div class="header" id="header">
@@ -24,9 +21,9 @@
                 </div>
             </div>
             <div class="nav-buttons">
-                <button class="nav-btn" id="navBrouillon" data-translate="drafts">📝 Brouillons</button>
-                <button class="nav-btn" id="navRapports" data-translate="reports">📊 Rapports</button>
-                <button class="nav-btn logout" id="logoutBtn" data-translate="logout">🚪</button>
+                <button class="nav-btn" id="navBrouillon">📝 Brouillons</button>
+                <button class="nav-btn" id="navRapports">📊 Rapports</button>
+                <button class="nav-btn logout" id="logoutBtn">🚪</button>
             </div>
         </div>
 
@@ -36,57 +33,57 @@
             <!-- PAGE LOGIN -->
             <div class="page login-page" id="loginPage" style="display: block;">
                 <div class="logo">🏢</div>
-                <h1 data-translate="login">Connexion</h1>
+                <h1>Connexion</h1>
                 <form id="loginForm">
                     <div class="form-group">
-                        <label for="username" data-translate="username">👤 Nom d'utilisateur</label>
+                        <label for="username">👤 Nom d'utilisateur</label>
                         <input type="text" id="username" name="username" required autocomplete="username">
                     </div>
                     <div class="form-group">
-                        <label for="password" data-translate="password">🔒 Mot de passe</label>
+                        <label for="password">🔒 Mot de passe</label>
                         <input type="password" id="password" name="password" required autocomplete="current-password">
                     </div>
-                    <button type="submit" class="login-btn" id="loginBtn" data-translate="connect">Se connecter</button>
+                    <button type="submit" class="login-btn" id="loginBtn">Se connecter</button>
                     <div class="error-message" id="errorMessage"></div>
                     <div class="loading" id="loadingMessage">
                         <div class="loading-spinner"></div>
-                        <span data-translate="loading">Connexion en cours...</span>
+                        Connexion en cours...
                     </div>
                 </form>
             </div>
 
             <!-- PAGE BROUILLON -->
             <div class="page" id="brouillonPage" style="display: none;">
-                <h1 data-translate="drafts">📝 Brouillons</h1>
+                <h1>📝 Brouillons</h1>
                 
                 <!-- Section Enregistrement -->
                 <div class="recording-section">
-                    <h3 data-translate="recordNew">🎤 Créer un nouveau rapport</h3>
+                    <h3>🎤 Créer un nouveau rapport</h3>
                     
                     <!-- Options d'ajout -->
                     <div class="input-options">
                         <div class="option-group">
-                            <h4 data-translate="recordVoice">Enregistrer un vocal</h4>
+                            <h4>Enregistrer un vocal</h4>
                             <div class="record-button" id="recordBtn">⏺️</div>
-                            <div id="recordingStatus" data-translate="pressToRecord">Appuyer pour enregistrer</div>
+                            <div id="recordingStatus">Appuyer pour enregistrer</div>
                             
                             <div class="audio-controls" id="audioControls">
-                                <button class="audio-btn" id="playBtn" data-translate="listen">▶️ Écouter</button>
-                                <button class="audio-btn" id="reRecordBtn" data-translate="redo">🔄 Refaire</button>
+                                <button class="audio-btn" id="playBtn">▶️ Écouter</button>
+                                <button class="audio-btn" id="reRecordBtn">🔄 Refaire</button>
                             </div>
                         </div>
                         
                         <div class="option-divider">OU</div>
                         
                         <div class="option-group">
-                            <h4 data-translate="importFile">Importer un fichier audio</h4>
+                            <h4>Importer un fichier audio</h4>
                             <input type="file" id="audioFileInput" accept="audio/*" style="display: none;">
-                            <button class="upload-btn" id="uploadBtn" data-translate="chooseFile">📁 Choisir un fichier</button>
+                            <button class="upload-btn" id="uploadBtn">📁 Choisir un fichier</button>
                             <div id="uploadStatus"></div>
                         </div>
                     </div>
                     
-                    <button class="send-btn" id="sendAudioBtn" data-translate="sendForProcessing">📤 Envoyer pour traitement</button>
+                    <button class="send-btn" id="sendAudioBtn">📤 Envoyer pour traitement</button>
                 </div>
 
                 <!-- Liste des brouillons -->
@@ -95,8 +92,8 @@
                     <div class="reports-list" id="brouillonsList">
                         <div class="empty-state">
                             <div class="icon">📄</div>
-                            <p data-translate="noDrafts">Aucun brouillon pour le moment</p>
-                            <p class="empty-subtitle" data-translate="noDraftsSubtitle">Enregistrez ou importez votre premier rapport vocal !</p>
+                            <p>Aucun brouillon pour le moment</p>
+                            <p class="empty-subtitle">Enregistrez ou importez votre premier rapport vocal !</p>
                         </div>
                     </div>
                 </div>
@@ -104,25 +101,25 @@
 
             <!-- PAGE RAPPORTS -->
             <div class="page" id="rapportsPage" style="display: none;">
-                <h1 data-translate="reports">📊 Rapports finalisés</h1>
+                <h1>📊 Rapports finalisés</h1>
                 
                 <!-- Section Recherche -->
                 <div class="search-section">
-                    <input type="text" class="search-input" id="searchInput" data-translate="searchReport" placeholder="🔍 Rechercher un rapport...">
+                    <input type="text" class="search-input" id="searchInput" placeholder="🔍 Rechercher un rapport...">
                 </div>
 
                 <!-- Stats -->
                 <div class="stats-section">
-                    ✅ <span data-translate="validatedReports">Rapports validés</span> : <span id="rapportsCount">0</span>
-                    📄 <span data-translate="generatedPDFs">PDF générés</span> : <span id="pdfCount">0</span>
+                    ✅ Rapports validés : <span id="rapportsCount">0</span>
+                    📄 PDF générés : <span id="pdfCount">0</span>
                 </div>
 
                 <!-- Liste des rapports -->
                 <div class="reports-list" id="rapportsList">
                     <div class="empty-state">
                         <div class="icon">📋</div>
-                        <p data-translate="noReports">Aucun rapport finalisé</p>
-                        <p class="empty-subtitle" data-translate="noReportsSubtitle">Validez vos brouillons pour les voir ici !</p>
+                        <p>Aucun rapport finalisé</p>
+                        <p class="empty-subtitle">Validez vos brouillons pour les voir ici !</p>
                     </div>
                 </div>
             </div>
@@ -130,656 +127,385 @@
         </div>
     </div>
 
-    <!-- Scripts dans le bon ordre -->
+    <!-- Scripts -->
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
     
-    <!-- Gestionnaire de langue et Google Sheets optimisé -->
+    <!-- Google Sheets Manager avec cache optimisé -->
     <script>
-        // ===========================================
-        // SYSTÈME DE TRADUCTION MULTILINGUE
-        // ===========================================
+    // Gestionnaire Google Sheets optimisé pour de meilleures performances
+    class GoogleSheetsManager {
+        constructor() {
+            this.SHEET_ID = '1f2SdNqwV83bU-h3OoVvkJPRm2WnJpPqPz7r3KML9KE';
+            this.SHEET_NAME = 'Feuille1';
+            this.cache = {
+                users: [],
+                lastUpdate: null,
+                cacheDuration: 300000, // 5 minutes au lieu de 1 minute
+                retryCount: 3,          // Nombre de tentatives
+                retryDelay: 1000        // Délai entre les tentatives
+            };
+        }
 
-        class LanguageManager {
-            constructor() {
-                this.currentLanguage = this.detectUserLanguage();
-                this.supportedLanguages = ['fr', 'en', 'ja'];
-                this.translations = {
-                    fr: {
-                        appTitle: "Rapports Commerciaux",
-                        login: "Connexion",
-                        username: "Nom d'utilisateur",
-                        password: "Mot de passe",
-                        connect: "Se connecter",
-                        logout: "Déconnexion",
-                        loading: "Connexion en cours...",
-                        welcome: "Bienvenue",
-                        drafts: "Brouillons",
-                        reports: "Rapports",
-                        recordNew: "Créer un nouveau rapport",
-                        recordVoice: "Enregistrer un vocal",
-                        importFile: "Importer un fichier audio",
-                        pressToRecord: "Appuyer pour enregistrer",
-                        recording: "Enregistrement en cours...",
-                        recordingComplete: "Enregistrement terminé",
-                        listen: "Écouter",
-                        redo: "Refaire",
-                        chooseFile: "Choisir un fichier",
-                        sendForProcessing: "Envoyer pour traitement",
-                        noDrafts: "Aucun brouillon pour le moment",
-                        noDraftsSubtitle: "Enregistrez ou importez votre premier rapport vocal !",
-                        noReports: "Aucun rapport finalisé",
-                        noReportsSubtitle: "Validez vos brouillons pour les voir ici !",
-                        generating: "Génération en cours...",
-                        error: "Erreur",
-                        success: "Succès",
-                        edit: "Éditer",
-                        validate: "Valider",
-                        delete: "Supprimer",
-                        view: "Voir",
-                        share: "Partager",
-                        export: "Exporter",
-                        downloadPDF: "Télécharger PDF",
-                        save: "Sauvegarder",
-                        cancel: "Annuler",
-                        fillAllFields: "Veuillez remplir tous les champs",
-                        userNotFound: "Utilisateur introuvable",
-                        wrongPassword: "Mot de passe incorrect",
-                        accountSuspended: "Compte suspendu - Contactez l'administrateur pour réactiver votre abonnement",
-                        connectionError: "Erreur de connexion - Vérifiez votre connexion internet",
-                        validatedReports: "Rapports validés",
-                        generatedPDFs: "PDF générés",
-                        searchReport: "Rechercher un rapport...",
-                        editReport: "Éditer le rapport",
-                        reportTitle: "Titre du rapport",
-                        reportContent: "Contenu du rapport",
-                        cacheUpdated: "Liste des utilisateurs mise à jour",
-                        cacheError: "Erreur lors de la mise à jour",
-                        syncInProgress: "Synchronisation en cours...",
-                        syncComplete: "Synchronisation terminée"
-                    },
-                    en: {
-                        appTitle: "Sales Reports",
-                        login: "Login",
-                        username: "Username",
-                        password: "Password",
-                        connect: "Log in",
-                        logout: "Logout",
-                        loading: "Logging in...",
-                        welcome: "Welcome",
-                        drafts: "Drafts",
-                        reports: "Reports",
-                        recordNew: "Create a new report",
-                        recordVoice: "Record voice",
-                        importFile: "Import audio file",
-                        pressToRecord: "Press to record",
-                        recording: "Recording in progress...",
-                        recordingComplete: "Recording complete",
-                        listen: "Listen",
-                        redo: "Redo",
-                        chooseFile: "Choose file",
-                        sendForProcessing: "Send for processing",
-                        noDrafts: "No drafts at the moment",
-                        noDraftsSubtitle: "Record or import your first voice report!",
-                        noReports: "No finalized reports",
-                        noReportsSubtitle: "Validate your drafts to see them here!",
-                        generating: "Generating...",
-                        error: "Error",
-                        success: "Success",
-                        edit: "Edit",
-                        validate: "Validate",
-                        delete: "Delete",
-                        view: "View",
-                        share: "Share",
-                        export: "Export",
-                        downloadPDF: "Download PDF",
-                        save: "Save",
-                        cancel: "Cancel",
-                        fillAllFields: "Please fill in all fields",
-                        userNotFound: "User not found",
-                        wrongPassword: "Incorrect password",
-                        accountSuspended: "Account suspended - Contact administrator to reactivate your subscription",
-                        connectionError: "Connection error - Check your internet connection",
-                        validatedReports: "Validated reports",
-                        generatedPDFs: "Generated PDFs",
-                        searchReport: "Search for a report...",
-                        editReport: "Edit report",
-                        reportTitle: "Report title",
-                        reportContent: "Report content",
-                        cacheUpdated: "User list updated",
-                        cacheError: "Update error",
-                        syncInProgress: "Synchronizing...",
-                        syncComplete: "Synchronization complete"
-                    },
-                    ja: {
-                        appTitle: "営業レポート",
-                        login: "ログイン",
-                        username: "ユーザー名",
-                        password: "パスワード",
-                        connect: "ログイン",
-                        logout: "ログアウト",
-                        loading: "ログイン中...",
-                        welcome: "ようこそ",
-                        drafts: "下書き",
-                        reports: "レポート",
-                        recordNew: "新しいレポートを作成",
-                        recordVoice: "音声を録音",
-                        importFile: "オーディオファイルをインポート",
-                        pressToRecord: "録音するには押してください",
-                        recording: "録音中...",
-                        recordingComplete: "録音完了",
-                        listen: "聞く",
-                        redo: "やり直し",
-                        chooseFile: "ファイルを選択",
-                        sendForProcessing: "処理のために送信",
-                        noDrafts: "現在下書きはありません",
-                        noDraftsSubtitle: "最初の音声レポートを録音またはインポートしてください！",
-                        noReports: "完成したレポートはありません",
-                        noReportsSubtitle: "下書きを承認してここに表示させてください！",
-                        generating: "生成中...",
-                        error: "エラー",
-                        success: "成功",
-                        edit: "編集",
-                        validate: "承認",
-                        delete: "削除",
-                        view: "表示",
-                        share: "共有",
-                        export: "エクスポート",
-                        downloadPDF: "PDFダウンロード",
-                        save: "保存",
-                        cancel: "キャンセル",
-                        fillAllFields: "すべてのフィールドを入力してください",
-                        userNotFound: "ユーザーが見つかりません",
-                        wrongPassword: "パスワードが正しくありません",
-                        accountSuspended: "アカウントが停止されています - サブスクリプションの再開について管理者にお問い合わせください",
-                        connectionError: "接続エラー - インターネット接続を確認してください",
-                        validatedReports: "承認されたレポート",
-                        generatedPDFs: "生成されたPDF",
-                        searchReport: "レポートを検索...",
-                        editReport: "レポートを編集",
-                        reportTitle: "レポートのタイトル",
-                        reportContent: "レポートの内容",
-                        cacheUpdated: "ユーザーリストが更新されました",
-                        cacheError: "更新エラー",
-                        syncInProgress: "同期中...",
-                        syncComplete: "同期完了"
-                    }
-                };
-            }
+        getSheetUrl() {
+            return `https://docs.google.com/spreadsheets/d/${this.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${this.SHEET_NAME}`;
+        }
 
-            detectUserLanguage() {
-                const saved = localStorage.getItem('app_language');
-                if (saved && this.supportedLanguages.includes(saved)) {
-                    return saved;
+        // Récupération avec retry automatique
+        async fetchUsersWithRetry(attempt = 1) {
+            try {
+                console.log(`🔄 Tentative ${attempt}/${this.cache.retryCount} - Récupération Google Sheets`);
+                
+                // Timeout de 10 secondes
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
+                const response = await fetch(this.getSheetUrl(), {
+                    signal: controller.signal,
+                    cache: 'no-cache'
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
-                const browserLang = navigator.language.substring(0, 2);
-                return this.supportedLanguages.includes(browserLang) ? browserLang : 'fr';
-            }
-
-            setLanguage(lang) {
-                if (this.supportedLanguages.includes(lang)) {
-                    this.currentLanguage = lang;
-                    localStorage.setItem('app_language', lang);
-                    this.updateUI();
-                    return true;
+                const textData = await response.text();
+                const jsonData = textData.substring(47).slice(0, -2);
+                const data = JSON.parse(jsonData);
+                
+                const users = this.parseSheetData(data);
+                
+                // Mise à jour du cache + sauvegarde persistante
+                this.cache.users = users;
+                this.cache.lastUpdate = new Date();
+                this.saveCacheToStorage(users);
+                
+                console.log(`✅ ${users.length} utilisateurs récupérés (tentative ${attempt})`);
+                return users;
+                
+            } catch (error) {
+                console.error(`❌ Erreur tentative ${attempt}:`, error);
+                
+                if (attempt < this.cache.retryCount) {
+                    const delay = this.cache.retryDelay * Math.pow(2, attempt - 1); // Délai exponentiel
+                    console.log(`⏳ Retry dans ${delay}ms...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return this.fetchUsersWithRetry(attempt + 1);
                 }
-                return false;
-            }
-
-            t(key) {
-                return this.translations[this.currentLanguage][key] || this.translations['fr'][key] || key;
-            }
-
-            getCurrentLanguage() {
-                return this.currentLanguage;
-            }
-
-            getSupportedLanguages() {
-                return this.supportedLanguages.map(lang => ({
-                    code: lang,
-                    name: {
-                        'fr': 'Français',
-                        'en': 'English', 
-                        'ja': '日本語'
-                    }[lang]
-                }));
-            }
-
-            updateUI() {
-                const elements = document.querySelectorAll('[data-translate]');
-                elements.forEach(el => {
-                    const key = el.getAttribute('data-translate');
-                    if (el.placeholder !== undefined) {
-                        el.placeholder = this.t(key);
-                    } else {
-                        el.textContent = this.t(key);
-                    }
-                });
-
-                window.dispatchEvent(new CustomEvent('languageChanged', {
-                    detail: { language: this.currentLanguage }
-                }));
-            }
-
-            createLanguageSelector() {
-                const selector = document.createElement('div');
-                selector.className = 'language-selector';
-                selector.innerHTML = `
-                    <select id="languageSelect" class="language-select">
-                        ${this.getSupportedLanguages().map(lang => 
-                            `<option value="${lang.code}" ${lang.code === this.currentLanguage ? 'selected' : ''}>${lang.name}</option>`
-                        ).join('')}
-                    </select>
-                `;
-
-                const select = selector.querySelector('#languageSelect');
-                select.addEventListener('change', (e) => {
-                    this.setLanguage(e.target.value);
-                    if (typeof Utils !== 'undefined') {
-                        Utils.showToast(this.t('cacheUpdated'), 'success');
-                    }
-                });
-
-                return selector;
+                
+                console.error(`❌ Échec définitif après ${this.cache.retryCount} tentatives`);
+                throw error;
             }
         }
 
-        // ===========================================
-        // GOOGLE SHEETS MANAGER OPTIMISÉ
-        // ===========================================
-
-        class OptimizedGoogleSheetsManager {
-            constructor() {
-                this.SHEET_ID = '1f2SdNqwV83bU-h3OoVvkJPRm2WnJpPqPz7r3KML9KE';
-                this.SHEET_NAME = 'Feuille1'; // Remis à "Feuille1" au lieu de "Feuille 1"
-                this.cache = {
-                    users: [],
-                    lastUpdate: null,
-                    cacheDuration: 300000, // 5 minutes
-                    retryCount: 3,
-                    retryDelay: 1000
+        // Sauvegarde du cache dans localStorage avec compression
+        saveCacheToStorage(users) {
+            try {
+                const cacheData = {
+                    users: users,
+                    timestamp: Date.now(),
+                    version: CONFIG.APP_VERSION || '1.0.0'
                 };
-                // Important: référence au gestionnaire de langue après initialisation
-                this.lang = null;
-            }
-
-            // Nouvelle méthode pour initialiser la référence de langue
-            initLanguageManager() {
-                this.lang = window.languageManager || { t: (key) => key };
-            }
-
-            getSheetUrl() {
-                return `https://docs.google.com/spreadsheets/d/${this.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${this.SHEET_NAME}`;
-            }
-
-            async fetchUsersWithRetry(attempt = 1, showProgress = true) {
-                // S'assurer que le gestionnaire de langue est initialisé
-                if (!this.lang) this.initLanguageManager();
-
-                if (showProgress && attempt === 1 && typeof Utils !== 'undefined') {
-                    Utils.showToast(this.lang.t('syncInProgress'), 'info', 5000);
-                }
-
-                try {
-                    console.log(`🔄 Tentative ${attempt}/${this.cache.retryCount} - Récupération Google Sheets`);
-                    
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 10000);
-                    
-                    const response = await fetch(this.getSheetUrl(), {
-                        signal: controller.signal,
-                        cache: 'no-cache'
-                    });
-                    
-                    clearTimeout(timeoutId);
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    }
-                    
-                    const textData = await response.text();
-                    const jsonData = textData.substring(47).slice(0, -2);
-                    const data = JSON.parse(jsonData);
-                    
-                    const users = this.parseSheetData(data);
-                    
-                    this.cache.users = users;
-                    this.cache.lastUpdate = new Date();
-                    
-                    console.log(`✅ ${users.length} utilisateurs récupérés (tentative ${attempt})`);
-                    
-                    if (showProgress && typeof Utils !== 'undefined') {
-                        Utils.showToast(this.lang.t('syncComplete'), 'success');
-                    }
-                    
-                    return users;
-                    
-                } catch (error) {
-                    console.error(`❌ Erreur tentative ${attempt}:`, error);
-                    
-                    if (attempt < this.cache.retryCount) {
-                        const delay = this.cache.retryDelay * Math.pow(2, attempt - 1);
-                        console.log(`⏳ Retry dans ${delay}ms...`);
-                        
-                        if (showProgress && typeof Utils !== 'undefined') {
-                            Utils.showToast(`${this.lang.t('error')} - Retry ${attempt + 1}/${this.cache.retryCount}`, 'error', 2000);
-                        }
-                        
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                        return this.fetchUsersWithRetry(attempt + 1, showProgress);
-                    }
-                    
-                    console.error(`❌ Échec définitif après ${this.cache.retryCount} tentatives`);
-                    
-                    if (showProgress && typeof Utils !== 'undefined') {
-                        Utils.showToast(this.lang.t('connectionError'), 'error');
-                    }
-                    
-                    throw error;
-                }
-            }
-
-            parseSheetData(data) {
-                const users = [];
                 
-                if (!data.table || !data.table.rows) {
-                    console.warn('⚠️ Aucune donnée trouvée dans Google Sheets');
-                    return users;
-                }
-                
-                const rows = data.table.rows;
-                
-                for (let i = 1; i < rows.length; i++) {
-                    const row = rows[i];
-                    
-                    if (!row.c || row.c.length < 5) continue;
-                    
-                    try {
-                        const user = {
-                            id: i,
-                            username: this.getCellValue(row.c[0]),
-                            password: this.getCellValue(row.c[1]),
-                            nom: this.getCellValue(row.c[2]),
-                            role: this.getCellValue(row.c[3]),
-                            statut: this.getCellValue(row.c[4]),
-                            dateCreation: this.getCellValue(row.c[5]),
-                            deviceId: this.getCellValue(row.c[6]),
-                            derniereConnexion: this.getCellValue(row.c[7]),
-                            isActive: this.getCellValue(row.c[4]) === 'actif'
-                        };
-                        
-                        if (user.username && user.password) {
-                            users.push(user);
-                            console.log(`👤 ${user.username} (${user.statut})`);
-                        }
-                        
-                    } catch (error) {
-                        console.error(`❌ Erreur parsing ligne ${i}:`, error);
-                    }
-                }
-                
-                return users;
+                // Compression basique - on peut ajouter une vraie compression plus tard
+                const compressed = JSON.stringify(cacheData);
+                localStorage.setItem('sheets_cache', compressed);
+                console.log('💾 Cache Google Sheets sauvegardé');
+            } catch (error) {
+                console.warn('⚠️ Erreur sauvegarde cache:', error);
             }
+        }
 
-            getCellValue(cell) {
-                if (!cell) return null;
-                if (cell.v !== undefined) return cell.v;
-                if (cell.f !== undefined) return cell.f;
+        // Chargement du cache depuis localStorage
+        loadCacheFromStorage() {
+            try {
+                const cached = localStorage.getItem('sheets_cache');
+                if (!cached) return null;
+                
+                const data = JSON.parse(cached);
+                const age = Date.now() - data.timestamp;
+                
+                if (age < this.cache.cacheDuration) {
+                    console.log('💾 Cache localStorage utilisé');
+                    return data.users;
+                } else {
+                    console.log('⏰ Cache localStorage expiré');
+                    // Garder le cache expiré comme fallback
+                    return data.users;
+                }
+            } catch (error) {
+                console.warn('⚠️ Erreur lecture cache:', error);
                 return null;
             }
+        }
 
-            getDefaultUsers() {
-                return [
-                    {
-                        id: 1,
-                        username: "commercial1",
-                        password: "pass123",
-                        nom: "Jean Dupont",
-                        role: "commercial",
-                        statut: "inactif",
-                        deviceId: null,
-                        isActive: false,
-                        dateCreation: "2024-09-23"
-                    },
-                    {
-                        id: 2,
-                        username: "andreac",
-                        password: "pass123",
-                        nom: "Andrea Ciechels",
-                        role: "commercial",
-                        statut: "actif",
-                        deviceId: null,
-                        isActive: true,
-                        dateCreation: "2024-09-24"
-                    },
-                    {
-                        id: 3,
-                        username: "cocolocow",
-                        password: "pass123",
-                        nom: "Corentin Havouis",
-                        role: "commercial",
-                        statut: "actif",
-                        deviceId: null,
-                        isActive: true,
-                        dateCreation: "2024-09-24"
-                    },
-                    {
-                        id: 4,
-                        username: "arthurf",
-                        password: "pass123",
-                        nom: "Arthur Fremion",
-                        role: "commercial",
-                        statut: "actif",
-                        deviceId: null,
-                        isActive: true,
-                        dateCreation: "2024-09-24"
-                    }
-                ];
-            }
-
-            async getUsers(forceRefresh = false, showProgress = false) {
-                if (!this.lang) this.initLanguageManager();
-
-                if (!forceRefresh && this.cache.users.length > 0 && this.cache.lastUpdate) {
-                    const timeDiff = new Date() - this.cache.lastUpdate;
-                    if (timeDiff < this.cache.cacheDuration) {
-                        console.log('🔄 Cache mémoire utilisé');
-                        return this.cache.users;
-                    }
+        async fetchUsers() {
+            try {
+                return await this.fetchUsersWithRetry();
+            } catch (error) {
+                // Fallback vers cache persistant même expiré
+                const cachedUsers = this.loadCacheFromStorage();
+                if (cachedUsers) {
+                    console.log('🔄 Fallback vers cache persistant');
+                    Utils.showToast('Mode hors-ligne - Données peut-être anciennes', 'info');
+                    return cachedUsers;
                 }
                 
+                // Dernière option : utilisateurs par défaut
+                console.log('🔄 Utilisation des utilisateurs par défaut');
+                return this.getDefaultUsers();
+            }
+        }
+
+        parseSheetData(data) {
+            const users = [];
+            
+            if (!data.table || !data.table.rows) {
+                console.warn('⚠️ Aucune donnée trouvée dans Google Sheets');
+                return users;
+            }
+            
+            const rows = data.table.rows;
+            
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                
+                if (!row.c || row.c.length < 5) continue;
+                
                 try {
-                    return await this.fetchUsersWithRetry(1, showProgress);
-                } catch (error) {
-                    console.log('🔄 Utilisation des utilisateurs par défaut');
-                    if (typeof Utils !== 'undefined') {
-                        Utils.showToast('Mode hors-ligne - Utilisateurs par défaut', 'error');
+                    const user = {
+                        id: i,
+                        username: this.getCellValue(row.c[0]),
+                        password: this.getCellValue(row.c[1]),
+                        nom: this.getCellValue(row.c[2]),
+                        role: this.getCellValue(row.c[3]),
+                        statut: this.getCellValue(row.c[4]),
+                        dateCreation: this.getCellValue(row.c[5]),
+                        deviceId: this.getCellValue(row.c[6]),
+                        derniereConnexion: this.getCellValue(row.c[7]),
+                        isActive: this.getCellValue(row.c[4]) === 'actif'
+                    };
+                    
+                    if (user.username && user.password) {
+                        users.push(user);
+                        console.log(`👤 Utilisateur ajouté: ${user.username} (${user.statut})`);
                     }
-                    return this.getDefaultUsers();
+                    
+                } catch (error) {
+                    console.error(`❌ Erreur parsing ligne ${i}:`, error);
                 }
             }
+            
+            return users;
+        }
 
-            async findUser(username) {
-                const users = await this.getUsers();
-                return users.find(user => user.username === username);
+        getCellValue(cell) {
+            if (!cell) return null;
+            if (cell.v !== undefined) return cell.v;
+            if (cell.f !== undefined) return cell.f;
+            return null;
+        }
+
+        getDefaultUsers() {
+            return [
+                {
+                    id: 1,
+                    username: "commercial1",
+                    password: "pass123",
+                    nom: "Jean Dupont",
+                    role: "commercial",
+                    statut: "inactif",
+                    deviceId: null,
+                    isActive: false,
+                    dateCreation: "2024-09-23"
+                },
+                {
+                    id: 2,
+                    username: "andreac",
+                    password: "pass123",
+                    nom: "Andrea Ciechels",
+                    role: "commercial",
+                    statut: "actif",
+                    deviceId: null,
+                    isActive: true,
+                    dateCreation: "2024-09-24"
+                },
+                {
+                    id: 3,
+                    username: "cocolocow",
+                    password: "pass123",
+                    nom: "Corentin Havouis",
+                    role: "commercial",
+                    statut: "actif",
+                    deviceId: null,
+                    isActive: true,
+                    dateCreation: "2024-09-24"
+                },
+                {
+                    id: 4,
+                    username: "arthurf",
+                    password: "pass123",
+                    nom: "Arthur Fremion",
+                    role: "commercial",
+                    statut: "actif",
+                    deviceId: null,
+                    isActive: true,
+                    dateCreation: "2024-09-24"
+                }
+            ];
+        }
+
+        async getUsers(forceRefresh = false) {
+            // Vérifier le cache mémoire
+            if (!forceRefresh && this.cache.users.length > 0 && this.cache.lastUpdate) {
+                const timeDiff = new Date() - this.cache.lastUpdate;
+                if (timeDiff < this.cache.cacheDuration) {
+                    console.log('🔄 Cache mémoire utilisé');
+                    return this.cache.users;
+                }
             }
+            
+            // Essayer le cache localStorage si pas en mémoire
+            if (!forceRefresh) {
+                const cachedUsers = this.loadCacheFromStorage();
+                if (cachedUsers) {
+                    this.cache.users = cachedUsers;
+                    this.cache.lastUpdate = new Date();
+                    return cachedUsers;
+                }
+            }
+            
+            // Récupérer depuis Google Sheets
+            return await this.fetchUsers();
+        }
 
-            async authenticateUser(username, password) {
-                if (!this.lang) this.initLanguageManager();
+        async findUser(username) {
+            const users = await this.getUsers();
+            return users.find(user => user.username === username);
+        }
 
-                try {
-                    console.log(`🔐 Authentification: ${username}`);
-                    
-                    const user = await this.findUser(username);
-                    
-                    if (!user) {
-                        return { 
-                            success: false, 
-                            error: this.lang.t('userNotFound')
-                        };
-                    }
-                    
-                    if (user.password !== password) {
-                        return { 
-                            success: false, 
-                            error: this.lang.t('wrongPassword')
-                        };
-                    }
-                    
-                    if (!user.isActive || user.statut !== 'actif') {
-                        return { 
-                            success: false, 
-                            error: this.lang.t('accountSuspended')
-                        };
-                    }
-                    
-                    console.log(`✅ Authentification réussie: ${username}`);
-                    return { success: true, user: user };
-                    
-                } catch (error) {
-                    console.error('❌ Erreur authentification:', error);
+        async authenticateUser(username, password) {
+            try {
+                console.log(`🔐 Tentative d'authentification: ${username}`);
+                
+                const user = await this.findUser(username);
+                
+                if (!user) {
+                    console.log(`❌ Utilisateur introuvable: ${username}`);
+                    return { success: false, error: 'Utilisateur introuvable' };
+                }
+                
+                if (user.password !== password) {
+                    console.log(`❌ Mot de passe incorrect pour: ${username}`);
+                    return { success: false, error: 'Mot de passe incorrect' };
+                }
+                
+                if (!user.isActive || user.statut !== 'actif') {
+                    console.log(`❌ Compte inactif: ${username}`);
                     return { 
                         success: false, 
-                        error: this.lang.t('connectionError')
+                        error: 'Compte suspendu - Contactez l\'administrateur pour réactiver votre abonnement' 
                     };
                 }
-            }
-
-            async updateUserDeviceId(username, deviceId) {
-                console.log(`📱 Association device ${deviceId} à ${username}`);
-                const users = await this.getUsers();
-                const user = users.find(u => u.username === username);
-                if (user) {
-                    user.deviceId = deviceId;
-                    return true;
-                }
-                return false;
-            }
-
-            async updateLastConnection(username) {
-                console.log(`⏰ Mise à jour connexion: ${username}`);
-                const users = await this.getUsers();
-                const user = users.find(u => u.username === username);
-                if (user) {
-                    user.derniereConnexion = new Date().toISOString();
-                    return true;
-                }
-                return false;
-            }
-
-            async refreshCache() {
-                console.log('🔄 Actualisation forcée du cache');
-                return await this.getUsers(true, true);
-            }
-
-            async getUserStats() {
-                const users = await this.getUsers();
-                return {
-                    total: users.length,
-                    actifs: users.filter(u => u.isActive).length,
-                    inactifs: users.filter(u => !u.isActive).length,
-                    commerciaux: users.filter(u => u.role === 'commercial').length,
-                    managers: users.filter(u => u.role === 'manager').length
+                
+                console.log(`✅ Authentification réussie: ${username}`);
+                return { success: true, user: user };
+                
+            } catch (error) {
+                console.error('❌ Erreur lors de l\'authentification:', error);
+                return { 
+                    success: false, 
+                    error: 'Erreur de connexion - Vérifiez votre connexion internet' 
                 };
             }
         }
 
-        // ===========================================
-        // STYLES CSS POUR SÉLECTEUR DE LANGUE
-        // ===========================================
-
-        const languageSelectorStyles = `
-        .language-selector {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            z-index: 1000;
+        async updateUserDeviceId(username, deviceId) {
+            console.log(`📱 Association device ${deviceId} à l'utilisateur ${username}`);
+            const users = await this.getUsers();
+            const user = users.find(u => u.username === username);
+            if (user) {
+                user.deviceId = deviceId;
+                // Sauvegarder en cache
+                this.saveCacheToStorage(users);
+                return true;
+            }
+            return false;
         }
 
-        .language-select {
-            background: rgba(255, 255, 255, 0.95);
-            border: 2px solid #2196F3;
-            border-radius: 8px;
-            padding: 5px 10px;
-            font-size: 12px;
-            cursor: pointer;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
+        async updateLastConnection(username) {
+            console.log(`⏰ Mise à jour dernière connexion: ${username}`);
+            const users = await this.getUsers();
+            const user = users.find(u => u.username === username);
+            if (user) {
+                user.derniereConnexion = new Date().toISOString();
+                this.saveCacheToStorage(users);
+                return true;
+            }
+            return false;
         }
 
-        .language-select:hover {
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        async refreshCache() {
+            console.log('🔄 Actualisation forcée du cache utilisateurs');
+            return await this.getUsers(true);
         }
 
-        .language-select:focus {
-            outline: none;
-            border-color: #1976D2;
+        async getUserStats() {
+            const users = await this.getUsers();
+            return {
+                total: users.length,
+                actifs: users.filter(u => u.isActive).length,
+                inactifs: users.filter(u => !u.isActive).length,
+                commerciaux: users.filter(u => u.role === 'commercial').length,
+                managers: users.filter(u => u.role === 'manager').length
+            };
         }
-        `;
 
-        const styleSheet = document.createElement('style');
-        styleSheet.textContent = languageSelectorStyles;
-        document.head.appendChild(styleSheet);
+        // Nouvelle méthode : diagnostic du cache
+        getCacheDiagnostics() {
+            const memoryCache = {
+                hasData: this.cache.users.length > 0,
+                count: this.cache.users.length,
+                lastUpdate: this.cache.lastUpdate,
+                age: this.cache.lastUpdate ? Date.now() - this.cache.lastUpdate : null,
+                valid: this.cache.lastUpdate && (Date.now() - this.cache.lastUpdate) < this.cache.cacheDuration
+            };
 
-        // ===========================================
-        // INITIALISATION GLOBALE
-        // ===========================================
+            let storageCache = { hasData: false, error: null };
+            try {
+                const cached = localStorage.getItem('sheets_cache');
+                if (cached) {
+                    const data = JSON.parse(cached);
+                    storageCache = {
+                        hasData: true,
+                        count: data.users ? data.users.length : 0,
+                        age: Date.now() - data.timestamp,
+                        valid: (Date.now() - data.timestamp) < this.cache.cacheDuration
+                    };
+                }
+            } catch (error) {
+                storageCache.error = error.message;
+            }
 
-        // Initialisation immédiate du gestionnaire de langue
-        window.languageManager = new LanguageManager();
+            return {
+                memory: memoryCache,
+                localStorage: storageCache,
+                config: {
+                    cacheDuration: this.cache.cacheDuration,
+                    retryCount: this.cache.retryCount
+                }
+            };
+        }
+    }
 
-        // Remplacement du gestionnaire Google Sheets
-        window.GoogleSheetsManager = OptimizedGoogleSheetsManager;
+    window.GoogleSheetsManager = GoogleSheetsManager;
     </script>
     
     <script src="js/audio-manager.js"></script>
     <script src="js/data-manager.js"></script>
     <script src="js/app.js"></script>
-    
-    <!-- Initialisation du sélecteur de langue -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('=== INITIALISATION APPLICATION ===');
-            
-            // Vérifier que tous les scripts sont chargés
-            if (typeof CONFIG === 'undefined') {
-                console.error('CONFIG manquant');
-                return;
-            }
-            if (typeof Utils === 'undefined') {
-                console.error('Utils manquant');
-                return;
-            }
-            
-            // Initialiser le gestionnaire de langue s'il n'existe pas déjà
-            if (!window.languageManager) {
-                window.languageManager = new LanguageManager();
-            }
-            
-            // Ajouter le sélecteur de langue
-            const languageSelector = document.getElementById('languageSelector');
-            if (languageSelector && window.languageManager) {
-                languageSelector.appendChild(window.languageManager.createLanguageSelector());
-                window.languageManager.updateUI();
-            }
-            
-            // Écouter les changements de langue
-            window.addEventListener('languageChanged', function(event) {
-                console.log('Langue changée vers:', event.detail.language);
-                document.documentElement.lang = event.detail.language;
-                
-                // Mettre à jour les placeholders dynamiques
-                const searchInput = document.getElementById('searchInput');
-                if (searchInput && window.languageManager) {
-                    searchInput.placeholder = `🔍 ${window.languageManager.t('searchReport')}`;
-                }
-            });
-            
-            console.log('=== INITIALISATION TERMINÉE ===');
-        });
-    </script>
     
     <!-- Service Worker -->
     <script>
@@ -790,6 +516,17 @@
                     .catch(err => console.log('SW registration failed'));
             });
         }
+
+        // Fonction utile pour diagnostiquer le cache
+        window.showCacheInfo = function() {
+            if (window.appManager && window.appManager.sheetsManager) {
+                const diagnostics = window.appManager.sheetsManager.getCacheDiagnostics();
+                console.log('=== DIAGNOSTICS CACHE ===');
+                console.table(diagnostics);
+                
+                Utils.showToast('Informations de cache affichées dans la console', 'info');
+            }
+        };
     </script>
 </body>
 </html>

@@ -1,4 +1,5 @@
-// Application principale - Gestion de l'authentification et navigation avec traductions
+// Application principale - Gestion de l'authentification et navigation
+// MODIFIÉE POUR UTILISER LE GOOGLE SHEETS OPTIMISÉ
 class AppManager {
     constructor() {
         this.currentUser = null;
@@ -7,8 +8,7 @@ class AppManager {
         // Initialisation des managers
         this.audioManager = new AudioManager();
         this.dataManager = new DataManager();
-        this.sheetsManager = new OptimizedGoogleSheetsManager(); // Manager optimisé
-        this.lang = window.languageManager; // Gestionnaire de traductions
+        this.sheetsManager = new GoogleSheetsManager(); // Manager optimisé
         
         // Exposition globale pour les événements
         window.dataManager = this.dataManager;
@@ -29,50 +29,17 @@ class AppManager {
         
         // Pré-chargement des utilisateurs depuis Google Sheets optimisé
         this.preloadUsers();
-        
-        // Écouter les changements de langue
-        this.bindLanguageEvents();
     }
 
-    // Nouveau: Gestion des événements de langue
-    bindLanguageEvents() {
-        window.addEventListener('languageChanged', (event) => {
-            console.log('Langue changée vers:', event.detail.language);
-            this.updateUIForLanguage();
-        });
-    }
-
-    // Nouveau: Mise à jour de l'interface après changement de langue
-    updateUIForLanguage() {
-        // Mettre à jour les placeholders dynamiquement
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.placeholder = `🔍 ${this.lang.t('searchReport')}`;
-        }
-
-        // Mettre à jour les status d'enregistrement
-        const recordingStatus = document.getElementById('recordingStatus');
-        if (recordingStatus && !this.audioManager.isRecording) {
-            recordingStatus.textContent = this.lang.t('pressToRecord');
-        }
-
-        // Recharger les listes avec les nouvelles traductions
-        if (this.currentPage === PAGES.BROUILLON) {
-            this.loadBrouillonsData();
-        } else if (this.currentPage === PAGES.RAPPORTS) {
-            this.loadRapportsData();
-        }
-    }
-
-    // Pré-chargement optimisé avec feedback utilisateur
+    // Pré-chargement optimisé des utilisateurs
     async preloadUsers() {
         try {
             console.log('Pré-chargement des utilisateurs depuis Google Sheets optimisé...');
             
-            // Charger sans afficher de toast (silencieux au démarrage)
-            await this.sheetsManager.getUsers(false, false);
+            // Charger les utilisateurs en arrière-plan (silencieux)
+            await this.sheetsManager.getUsers();
             
-            // Affichage des statistiques en console
+            // Affichage des statistiques en console (optionnel)
             const stats = await this.sheetsManager.getUserStats();
             console.log('Statistiques utilisateurs:', stats);
         } catch (error) {
@@ -108,7 +75,7 @@ class AppManager {
         // Navigation
         this.bindNavigationEvents();
 
-        // Search avec traduction
+        // Search
         const searchInput = document.getElementById('searchInput');
         if (searchInput) {
             searchInput.addEventListener('input', Utils.debounce((e) => {
@@ -202,9 +169,9 @@ class AppManager {
         const username = usernameEl.value.trim();
         const password = passwordEl.value.trim();
 
-        // Validation avec traduction
+        // Validation
         if (!username || !password) {
-            this.showError(this.lang.t('fillAllFields'));
+            this.showError('Veuillez remplir tous les champs');
             return;
         }
 
@@ -249,9 +216,7 @@ class AppManager {
 
             this.updateUserInterface();
             this.showPage(PAGES.BROUILLON);
-            
-            // Message de bienvenue traduit
-            Utils.showToast(`${this.lang.t('welcome')} ${this.currentUser.nom}`, 'success');
+            Utils.showToast(`Bienvenue ${this.currentUser.nom}`, 'success');
 
         } catch (error) {
             console.error('Erreur lors de l\'authentification:', error);
@@ -333,44 +298,14 @@ class AppManager {
         return this.sheetsManager;
     }
 
-    // Nouvelle méthode: Diagnostic de l'application
-    async getDiagnostics() {
-        const cacheStats = await this.sheetsManager.getCacheDiagnostics();
-        const userStats = await this.sheetsManager.getUserStats();
-        
-        return {
-            cache: cacheStats,
-            users: userStats,
-            currentUser: this.currentUser ? {
-                username: this.currentUser.username,
-                nom: this.currentUser.nom,
-                loginTime: this.currentUser.loginTime
-            } : null,
-            language: this.lang.getCurrentLanguage(),
-            storage: {
-                localStorage: {
-                    used: new Blob([localStorage.getItem('rapportsApp') || '']).size,
-                    available: 'localStorage' in window
-                },
-                indexedDB: {
-                    available: 'indexedDB' in window
-                }
-            },
-            app: {
-                version: CONFIG.APP_VERSION,
-                currentPage: this.currentPage
-            }
-        };
-    }
-
-    // Force la mise à jour des utilisateurs avec feedback
+    // Force la mise à jour des utilisateurs avec le cache optimisé
     async refreshUsers() {
         try {
             await this.sheetsManager.refreshCache();
-            Utils.showToast(this.lang.t('cacheUpdated'), 'success');
+            Utils.showToast('Liste des utilisateurs mise à jour', 'success');
         } catch (error) {
             console.error('Erreur lors de la mise à jour:', error);
-            Utils.showToast(this.lang.t('cacheError'), 'error');
+            Utils.showToast('Erreur lors de la mise à jour', 'error');
         }
     }
 
@@ -385,7 +320,7 @@ class AppManager {
     downloadPDF(id) { return this.dataManager.downloadPDF(id); }
 }
 
-// === INITIALISATION AVEC TRADUCTIONS ===
+// === INITIALISATION ===
 
 // Initialisation de l'application
 document.addEventListener('DOMContentLoaded', function() {
@@ -400,20 +335,15 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    if (typeof LanguageManager === 'undefined') {
-        console.error('LanguageManager non défini. Vérifiez que le gestionnaire de langue est chargé.');
-        return;
-    }
-
-    if (typeof OptimizedGoogleSheetsManager === 'undefined') {
-        console.error('OptimizedGoogleSheetsManager non défini. Vérifiez que le gestionnaire optimisé est chargé.');
+    if (typeof GoogleSheetsManager === 'undefined') {
+        console.error('GoogleSheetsManager non défini. Vérifiez que le gestionnaire optimisé est chargé.');
         return;
     }
 
     // Initialisation de l'app
     try {
         window.appManager = new AppManager();
-        console.log('Application initialisée avec succès (Google Sheets optimisé + traductions)');
+        console.log('Application initialisée avec succès (Google Sheets optimisé)');
     } catch (error) {
         console.error('Erreur lors de l\'initialisation:', error);
     }
@@ -426,12 +356,12 @@ window.addEventListener('beforeunload', function() {
     }
 });
 
-// Gestion des erreurs globales avec traductions
+// Gestion des erreurs globales
 window.addEventListener('error', function(event) {
     console.error('Erreur globale:', event.error);
     
-    if (typeof Utils !== 'undefined' && window.languageManager) {
-        Utils.showToast(window.languageManager.t('error'), 'error');
+    if (typeof Utils !== 'undefined') {
+        Utils.showToast('Une erreur inattendue s\'est produite', 'error');
     }
 });
 
@@ -439,25 +369,6 @@ window.addEventListener('error', function(event) {
 window.refreshUsers = function() {
     if (window.appManager) {
         window.appManager.refreshUsers();
-    }
-};
-
-// Nouvelle fonction: Diagnostics de l'application
-window.showDiagnostics = async function() {
-    if (window.appManager) {
-        const diagnostics = await window.appManager.getDiagnostics();
-        console.log('=== DIAGNOSTICS APPLICATION ===');
-        console.table(diagnostics);
-        
-        // Affichage dans une modale
-        const lang = window.languageManager;
-        Utils.createModal(
-            'Diagnostics de l\'application',
-            `<pre style="font-size: 12px; overflow: auto; max-height: 400px;">${JSON.stringify(diagnostics, null, 2)}</pre>`,
-            [
-                { text: 'Fermer', class: 'btn-secondary', onclick: 'this.closest("[data-modal]").remove()' }
-            ]
-        );
     }
 };
 
