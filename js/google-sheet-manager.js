@@ -1,9 +1,9 @@
 // Gestionnaire Google Sheets pour la gestion dynamique des utilisateurs
 class GoogleSheetsManager {
     constructor() {
-        // REMPLACEZ CET ID PAR L'ID DE VOTRE GOOGLE SHEETS
+        // ID de votre Google Sheets corrigé
         this.SHEET_ID = '1I2SdNqwVB3bU-h3GoYvKjPRm2WhjpPdPc77rJKML9KE';
-        this.SHEET_NAME = 'utilisateur'; // Nom de votre feuille (généralement "Feuille1")
+        this.SHEET_NAME = 'Feuille 1'; // Nom de votre feuille
         this.cache = {
             users: [],
             lastUpdate: null,
@@ -13,7 +13,7 @@ class GoogleSheetsManager {
 
     // Construction de l'URL de l'API Google Sheets publique
     getSheetUrl() {
-        return `https://docs.google.com/spreadsheets/d/${this.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${this.SHEET_NAME}`;
+        return `https://docs.google.com/spreadsheets/d/${this.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(this.SHEET_NAME)}`;
     }
 
     // Récupère les utilisateurs depuis Google Sheets
@@ -52,7 +52,7 @@ class GoogleSheetsManager {
         }
     }
 
-    // Parse les données brutes de Google Sheets
+    // Parse les données brutes de Google Sheets - CORRIGÉ
     parseSheetData(data) {
         const users = [];
         
@@ -62,38 +62,60 @@ class GoogleSheetsManager {
         }
         
         const rows = data.table.rows;
+        console.log(`📊 Nombre total de lignes trouvées: ${rows.length}`);
         
-        // Ignorer la première ligne (headers)
+        // CORRECTION : Commencer à l'index 1 pour ignorer les headers ET vérifier que ce ne sont pas des headers
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
             
-            if (!row.c || row.c.length < 5) continue; // Ligne vide ou incomplète
+            if (!row.c || row.c.length < 5) {
+                console.log(`⚠️ Ligne ${i} ignorée: données incomplètes`);
+                continue;
+            }
             
             try {
+                const username = this.getCellValue(row.c[0]);
+                const password = this.getCellValue(row.c[1]);
+                const nom = this.getCellValue(row.c[2]);
+                const role = this.getCellValue(row.c[3]);
+                const statut = this.getCellValue(row.c[4]);
+                
+                // CORRECTION PRINCIPALE : Ignorer si c'est une ligne de titre
+                if (username === 'Username' || username === 'username' || 
+                    password === 'Password' || password === 'password' ||
+                    nom === 'Nom' || role === 'Role' || statut === 'Statut') {
+                    console.log(`📋 Ligne ${i} ignorée: ligne de titre détectée`);
+                    continue;
+                }
+                
+                // Vérifier que l'utilisateur a au minimum username et password valides
+                if (!username || !password || username.trim() === '' || password.trim() === '') {
+                    console.log(`⚠️ Ligne ${i} ignorée: username ou password vide`);
+                    continue;
+                }
+                
                 const user = {
-                    id: i,
-                    username: this.getCellValue(row.c[0]), // Colonne A
-                    password: this.getCellValue(row.c[1]), // Colonne B
-                    nom: this.getCellValue(row.c[2]),      // Colonne C
-                    role: this.getCellValue(row.c[3]),     // Colonne D
-                    statut: this.getCellValue(row.c[4]),   // Colonne E
-                    dateCreation: this.getCellValue(row.c[5]), // Colonne F
-                    deviceId: this.getCellValue(row.c[6]),     // Colonne G
-                    derniereConnexion: this.getCellValue(row.c[7]), // Colonne H
-                    isActive: this.getCellValue(row.c[4]) === 'actif' // Basé sur la colonne statut
+                    id: users.length + 1, // ID basé sur l'ordre des utilisateurs valides
+                    username: username,
+                    password: password,
+                    nom: nom || 'Nom non défini',
+                    role: role || 'commercial',
+                    statut: statut || 'inactif',
+                    dateCreation: this.getCellValue(row.c[5]),
+                    deviceId: this.getCellValue(row.c[6]),
+                    derniereConnexion: this.getCellValue(row.c[7]),
+                    isActive: (statut && statut.toLowerCase() === 'actif')
                 };
                 
-                // Vérifier que l'utilisateur a au minimum username et password
-                if (user.username && user.password) {
-                    users.push(user);
-                    console.log(`👤 Utilisateur ajouté: ${user.username} (${user.statut})`);
-                }
+                users.push(user);
+                console.log(`👤 Utilisateur ajouté: ${user.username} (${user.statut}) - Actif: ${user.isActive}`);
                 
             } catch (error) {
                 console.error(`❌ Erreur parsing ligne ${i}:`, error);
             }
         }
         
+        console.log(`✅ Parsing terminé: ${users.length} utilisateurs valides trouvés`);
         return users;
     }
 
@@ -113,6 +135,17 @@ class GoogleSheetsManager {
                 username: "commercial1",
                 password: "pass123",
                 nom: "Jean Dupont (défaut)",
+                role: "commercial",
+                statut: "inactif",
+                deviceId: null,
+                isActive: false,
+                dateCreation: new Date().toISOString()
+            },
+            {
+                id: 2,
+                username: "andreac",
+                password: "pass123",
+                nom: "Andrea Ciechels (défaut)",
                 role: "commercial",
                 statut: "actif",
                 deviceId: null,
@@ -140,7 +173,9 @@ class GoogleSheetsManager {
     // Trouve un utilisateur par username
     async findUser(username) {
         const users = await this.getUsers();
-        return users.find(user => user.username === username);
+        const foundUser = users.find(user => user.username === username);
+        console.log(`🔍 Recherche utilisateur "${username}": ${foundUser ? 'trouvé' : 'non trouvé'}`);
+        return foundUser;
     }
 
     // Authentifie un utilisateur
@@ -155,13 +190,15 @@ class GoogleSheetsManager {
                 return { success: false, error: 'Utilisateur introuvable' };
             }
             
+            console.log(`🔍 Utilisateur trouvé: ${user.username}, statut: ${user.statut}, actif: ${user.isActive}`);
+            
             if (user.password !== password) {
                 console.log(`❌ Mot de passe incorrect pour: ${username}`);
                 return { success: false, error: 'Mot de passe incorrect' };
             }
             
             if (!user.isActive || user.statut !== 'actif') {
-                console.log(`❌ Compte inactif: ${username}`);
+                console.log(`❌ Compte inactif: ${username} (statut: ${user.statut})`);
                 return { 
                     success: false, 
                     error: 'Compte suspendu - Contactez l\'administrateur pour réactiver votre abonnement' 
@@ -183,8 +220,6 @@ class GoogleSheetsManager {
     // Met à jour le device ID d'un utilisateur (simulation)
     async updateUserDeviceId(username, deviceId) {
         console.log(`📱 Association device ${deviceId} à l'utilisateur ${username}`);
-        // Note: Pour une vraie mise à jour dans Google Sheets, il faudrait l'API avec authentification
-        // Pour l'instant, on met à jour seulement en local
         const users = await this.getUsers();
         const user = users.find(u => u.username === username);
         if (user) {
@@ -197,7 +232,6 @@ class GoogleSheetsManager {
     // Met à jour la dernière connexion (simulation)
     async updateLastConnection(username) {
         console.log(`⏰ Mise à jour dernière connexion: ${username}`);
-        // Note: Même principe que updateUserDeviceId
         const users = await this.getUsers();
         const user = users.find(u => u.username === username);
         if (user) {
@@ -213,18 +247,18 @@ class GoogleSheetsManager {
         return await this.fetchUsers();
     }
 
-    // Statistiques des utilisateurs
+    // Statistiques des utilisateurs avec logs détaillés
     async getUserStats() {
         const users = await this.getUsers();
-        return {
+        const stats = {
             total: users.length,
             actifs: users.filter(u => u.isActive).length,
             inactifs: users.filter(u => !u.isActive).length,
             commerciaux: users.filter(u => u.role === 'commercial').length,
             managers: users.filter(u => u.role === 'manager').length
         };
+        
+        console.log(`📊 Statistiques utilisateurs:`, stats);
+        return stats;
     }
 }
-
-// Configuration et initialisation
-window.GoogleSheetsManager = GoogleSheetsManager;
