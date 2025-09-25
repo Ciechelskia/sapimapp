@@ -106,7 +106,10 @@ class GoogleSheetsManager {
                 }
                 
                 // CORRECTION FINALE: Nettoyer le statut une seule fois pour cohérence
-                const statutNettoye = statutBrut ? statutBrut.replace(/"/g, '').trim() : 'inactif';
+                const statutNettoye = statutBrut 
+                ? statutBrut.replace(/[\u200B-\u200D\uFEFF\u00A0"]/g, '').trim().toLowerCase() 
+                : 'inactif';
+
                 
                 const user = {
                     id: users.length + 1,
