@@ -1,4 +1,4 @@
-// Gestionnaire Google Sheets pour la gestion dynamique des utilisateurs - Version CSV
+// Gestionnaire Google Sheets pour la gestion dynamique des utilisateurs - Version CSV corrigée
 class GoogleSheetsManager {
     constructor() {
         // ID de votre Google Sheets corrigé
@@ -115,7 +115,8 @@ class GoogleSheetsManager {
                     dateCreation: cols[5] ? cols[5].trim() : null,
                     deviceId: cols[6] ? cols[6].trim() : null,
                     derniereConnexion: cols[7] ? cols[7].trim() : null,
-                    isActive: (statut && statut.toLowerCase() === 'actif')
+                    // CORRECTION: Suppression des guillemets parasites avant comparaison
+                    isActive: (statut && statut.replace(/"/g, '').trim().toLowerCase() === 'actif')
                 };
                 
                 users.push(user);
@@ -252,8 +253,10 @@ class GoogleSheetsManager {
                 return { success: false, error: 'Mot de passe incorrect' };
             }
             
-            if (!user.isActive || user.statut !== 'actif') {
-                console.log(`❌ Compte inactif: ${username} (statut: ${user.statut})`);
+            // CORRECTION: Nettoyage des guillemets parasites dans la vérification du statut
+            const statutNettoye = user.statut.replace(/"/g, '').trim().toLowerCase();
+            if (!user.isActive || statutNettoye !== 'actif') {
+                console.log(`❌ Compte inactif: ${username} (statut: ${user.statut}, nettoyé: ${statutNettoye})`);
                 return { 
                     success: false, 
                     error: 'Compte suspendu - Contactez l\'administrateur pour réactiver votre abonnement' 
