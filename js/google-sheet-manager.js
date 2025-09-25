@@ -1,9 +1,9 @@
-// Gestionnaire Google Sheets pour la gestion dynamique des utilisateurs
+// Gestionnaire Google Sheets pour la gestion dynamique des utilisateurs - Version CSV
 class GoogleSheetsManager {
     constructor() {
         // ID de votre Google Sheets corrigé
         this.SHEET_ID = '1I2SdNqwVB3bU-h3GoYvKjPRm2WhjpPdPc77rJKML9KE';
-        this.SHEET_NAME = 'Feuille 1'; // Nom de votre feuille
+        this.SHEET_NAME = 'Feuille 1';
         this.cache = {
             users: [],
             lastUpdate: null,
@@ -11,24 +11,26 @@ class GoogleSheetsManager {
         };
     }
 
-    // Construction de l'URL de l'API Google Sheets publique
+    // Construction de l'URL pour l'export CSV (qui fonctionne !)
     getSheetUrl() {
-        return `https://docs.google.com/spreadsheets/d/${this.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(this.SHEET_NAME)}`;
+        return `https://docs.google.com/spreadsheets/d/${this.SHEET_ID}/export?format=csv&gid=0`;
     }
 
-    // Récupère les utilisateurs depuis Google Sheets
+    // Récupère les utilisateurs depuis Google Sheets en CSV
     async fetchUsers() {
         try {
-            console.log('🔄 Récupération des utilisateurs depuis Google Sheets...');
+            console.log('🔄 Récupération des utilisateurs depuis Google Sheets (CSV)...');
             
             const response = await fetch(this.getSheetUrl());
-            const textData = await response.text();
             
-            // Google Sheets renvoie du JSONP, on extrait le JSON
-            const jsonData = textData.substring(47).slice(0, -2);
-            const data = JSON.parse(jsonData);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
             
-            const users = this.parseSheetData(data);
+            const csvText = await response.text();
+            console.log('📄 CSV reçu, taille:', csvText.length, 'caractères');
+            
+            const users = this.parseCSVData(csvText);
             
             // Mise à jour du cache
             this.cache.users = users;
@@ -52,79 +54,112 @@ class GoogleSheetsManager {
         }
     }
 
-    // Parse les données brutes de Google Sheets - CORRIGÉ
-    parseSheetData(data) {
+    // Parse les données CSV
+    parseCSVData(csvText) {
         const users = [];
+        const lines = csvText.trim().split('\n');
         
-        if (!data.table || !data.table.rows) {
-            console.warn('⚠️ Aucune donnée trouvée dans Google Sheets');
-            return users;
+        console.log(`📊 Nombre de lignes CSV trouvées: ${lines.length}`);
+        
+        // Afficher les premières lignes pour debug
+        console.log('🔍 Première ligne (headers):', lines[0]);
+        if (lines.length > 1) {
+            console.log('🔍 Deuxième ligne (premier utilisateur):', lines[1]);
         }
         
-        const rows = data.table.rows;
-        console.log(`📊 Nombre total de lignes trouvées: ${rows.length}`);
-        
-        // CORRECTION : Commencer à l'index 1 pour ignorer les headers ET vérifier que ce ne sont pas des headers
-        for (let i = 1; i < rows.length; i++) {
-            const row = rows[i];
-            
-            if (!row.c || row.c.length < 5) {
-                console.log(`⚠️ Ligne ${i} ignorée: données incomplètes`);
+        // Ignorer la première ligne (headers) et traiter les données
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) {
+                console.log(`⚠️ Ligne ${i} ignorée: vide`);
                 continue;
             }
             
             try {
-                const username = this.getCellValue(row.c[0]);
-                const password = this.getCellValue(row.c[1]);
-                const nom = this.getCellValue(row.c[2]);
-                const role = this.getCellValue(row.c[3]);
-                const statut = this.getCellValue(row.c[4]);
+                // Parser la ligne CSV
+                const cols = this.parseCSVLine(line);
+                console.log(`📝 Ligne ${i} parsée:`, cols);
                 
-                // CORRECTION PRINCIPALE : Ignorer si c'est une ligne de titre
-                if (username === 'Username' || username === 'username' || 
-                    password === 'Password' || password === 'password' ||
-                    nom === 'Nom' || role === 'Role' || statut === 'Statut') {
+                if (cols.length < 5) {
+                    console.log(`⚠️ Ligne ${i} ignorée: moins de 5 colonnes (${cols.length})`);
+                    continue;
+                }
+                
+                const username = cols[0] ? cols[0].trim() : '';
+                const password = cols[1] ? cols[1].trim() : '';
+                const nom = cols[2] ? cols[2].trim() : '';
+                const role = cols[3] ? cols[3].trim() : '';
+                const statut = cols[4] ? cols[4].trim() : '';
+                
+                // Vérifier que ce ne sont pas des headers
+                if (username.toLowerCase() === 'username' || 
+                    password.toLowerCase() === 'password' ||
+                    nom.toLowerCase() === 'nom') {
                     console.log(`📋 Ligne ${i} ignorée: ligne de titre détectée`);
                     continue;
                 }
                 
-                // Vérifier que l'utilisateur a au minimum username et password valides
-                if (!username || !password || username.trim() === '' || password.trim() === '') {
-                    console.log(`⚠️ Ligne ${i} ignorée: username ou password vide`);
+                // Vérifier que username et password existent
+                if (!username || !password) {
+                    console.log(`⚠️ Ligne ${i} ignorée: username (${username}) ou password manquant`);
                     continue;
                 }
                 
                 const user = {
-                    id: users.length + 1, // ID basé sur l'ordre des utilisateurs valides
+                    id: users.length + 1,
                     username: username,
                     password: password,
                     nom: nom || 'Nom non défini',
                     role: role || 'commercial',
                     statut: statut || 'inactif',
-                    dateCreation: this.getCellValue(row.c[5]),
-                    deviceId: this.getCellValue(row.c[6]),
-                    derniereConnexion: this.getCellValue(row.c[7]),
+                    dateCreation: cols[5] ? cols[5].trim() : null,
+                    deviceId: cols[6] ? cols[6].trim() : null,
+                    derniereConnexion: cols[7] ? cols[7].trim() : null,
                     isActive: (statut && statut.toLowerCase() === 'actif')
                 };
                 
                 users.push(user);
-                console.log(`👤 Utilisateur ajouté: ${user.username} (${user.statut}) - Actif: ${user.isActive}`);
+                console.log(`👤 Utilisateur CSV ajouté: ${user.username} (${user.statut}) - Actif: ${user.isActive}`);
                 
             } catch (error) {
                 console.error(`❌ Erreur parsing ligne ${i}:`, error);
             }
         }
         
-        console.log(`✅ Parsing terminé: ${users.length} utilisateurs valides trouvés`);
+        console.log(`✅ Parsing CSV terminé: ${users.length} utilisateurs valides trouvés`);
         return users;
     }
 
-    // Extrait la valeur d'une cellule Google Sheets
-    getCellValue(cell) {
-        if (!cell) return null;
-        if (cell.v !== undefined) return cell.v;
-        if (cell.f !== undefined) return cell.f;
-        return null;
+    // Parser une ligne CSV (gère les virgules dans les guillemets)
+    parseCSVLine(line) {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                result.push(current);
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+        
+        // Ajouter le dernier élément
+        result.push(current);
+        
+        // Nettoyer les guillemets au début/fin
+        return result.map(item => {
+            item = item.trim();
+            if (item.startsWith('"') && item.endsWith('"')) {
+                item = item.slice(1, -1);
+            }
+            return item;
+        });
     }
 
     // Utilisateurs par défaut en cas d'erreur
@@ -147,6 +182,17 @@ class GoogleSheetsManager {
                 password: "pass123",
                 nom: "Andrea Ciechels (défaut)",
                 role: "commercial",
+                statut: "actif",
+                deviceId: null,
+                isActive: true,
+                dateCreation: new Date().toISOString()
+            },
+            {
+                id: 3,
+                username: "cocoh",
+                password: "pass123",
+                nom: "Corentin Havouis (défaut)",
+                role: "manager",
                 statut: "actif",
                 deviceId: null,
                 isActive: true,
@@ -175,6 +221,15 @@ class GoogleSheetsManager {
         const users = await this.getUsers();
         const foundUser = users.find(user => user.username === username);
         console.log(`🔍 Recherche utilisateur "${username}": ${foundUser ? 'trouvé' : 'non trouvé'}`);
+        if (foundUser) {
+            console.log(`📋 Utilisateur trouvé:`, {
+                username: foundUser.username,
+                nom: foundUser.nom,
+                role: foundUser.role,
+                statut: foundUser.statut,
+                isActive: foundUser.isActive
+            });
+        }
         return foundUser;
     }
 
