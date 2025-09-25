@@ -1,4 +1,4 @@
-// Gestionnaire Google Sheets pour la gestion dynamique des utilisateurs - Version CSV corrigée
+// Gestionnaire Google Sheets pour la gestion dynamique des utilisateurs - Version CSV finale
 class GoogleSheetsManager {
     constructor() {
         // ID de votre Google Sheets corrigé
@@ -89,7 +89,7 @@ class GoogleSheetsManager {
                 const password = cols[1] ? cols[1].trim() : '';
                 const nom = cols[2] ? cols[2].trim() : '';
                 const role = cols[3] ? cols[3].trim() : '';
-                const statut = cols[4] ? cols[4].trim() : '';
+                const statutBrut = cols[4] ? cols[4].trim() : '';
                 
                 // Vérifier que ce ne sont pas des headers
                 if (username.toLowerCase() === 'username' || 
@@ -105,18 +105,21 @@ class GoogleSheetsManager {
                     continue;
                 }
                 
+                // CORRECTION FINALE: Nettoyer le statut une seule fois pour cohérence
+                const statutNettoye = statutBrut ? statutBrut.replace(/"/g, '').trim() : 'inactif';
+                
                 const user = {
                     id: users.length + 1,
                     username: username,
                     password: password,
                     nom: nom || 'Nom non défini',
                     role: role || 'commercial',
-                    statut: statut || 'inactif',
+                    statut: statutNettoye,  // Utiliser le statut nettoyé
                     dateCreation: cols[5] ? cols[5].trim() : null,
                     deviceId: cols[6] ? cols[6].trim() : null,
                     derniereConnexion: cols[7] ? cols[7].trim() : null,
-                    // CORRECTION: Suppression des guillemets parasites avant comparaison
-                    isActive: (statut && statut.replace(/"/g, '').trim().toLowerCase() === 'actif')
+                    // Utiliser le statut déjà nettoyé pour la cohérence
+                    isActive: (statutNettoye.toLowerCase() === 'actif')
                 };
                 
                 users.push(user);
@@ -253,10 +256,9 @@ class GoogleSheetsManager {
                 return { success: false, error: 'Mot de passe incorrect' };
             }
             
-            // CORRECTION: Nettoyage des guillemets parasites dans la vérification du statut
-            const statutNettoye = user.statut.replace(/"/g, '').trim().toLowerCase();
-            if (!user.isActive || statutNettoye !== 'actif') {
-                console.log(`❌ Compte inactif: ${username} (statut: ${user.statut}, nettoyé: ${statutNettoye})`);
+            // CORRECTION FINALE: Vérification simplifiée car le statut est déjà nettoyé
+            if (!user.isActive) {
+                console.log(`❌ Compte inactif: ${username} (statut: ${user.statut}, isActive: ${user.isActive})`);
                 return { 
                     success: false, 
                     error: 'Compte suspendu - Contactez l\'administrateur pour réactiver votre abonnement' 
