@@ -1,5 +1,4 @@
 // Application principale - Gestion de l'authentification et navigation
-// MODIFIÉE POUR UTILISER LE GOOGLE SHEETS OPTIMISÉ
 class AppManager {
     constructor() {
         this.currentUser = null;
@@ -8,7 +7,11 @@ class AppManager {
         // Initialisation des managers
         this.audioManager = new AudioManager();
         this.dataManager = new DataManager();
-        this.sheetsManager = new GoogleSheetsManager(); // Manager optimisé
+        this.sheetsManager = new GoogleSheetsManager();
+        
+        // Initialiser le gestionnaire de langues
+        window.languageManager = new LanguageManager();
+        this.languageManager = window.languageManager;
         
         // Exposition globale pour les événements
         window.dataManager = this.dataManager;
@@ -24,22 +27,56 @@ class AppManager {
         this.logout();
         this.showPage(PAGES.LOGIN);
         
-        // Ajout des styles CSS pour les animations toast
+        // Ajouter les styles CSS pour les animations toast
         this.addToastStyles();
+        
+        // Injecter les styles du sélecteur de langue
+        this.languageManager.injectStyles();
+        
+        // Créer et insérer le sélecteur de langue
+        this.initLanguageSelector();
+        
+        // Écouter les changements de langue
+        window.addEventListener('languageChanged', (e) => {
+            this.onLanguageChanged(e.detail.language);
+        });
         
         // Pré-chargement des utilisateurs depuis Google Sheets optimisé
         this.preloadUsers();
+    }
+
+    // Initialiser le sélecteur de langue
+    initLanguageSelector() {
+        const container = document.getElementById('languageSelectorContainer');
+        if (container) {
+            const selector = this.languageManager.createLanguageSelector();
+            container.appendChild(selector);
+        }
+    }
+
+    // Gérer le changement de langue
+    onLanguageChanged(newLang) {
+        console.log(`🌍 Changement de langue détecté: ${newLang}`);
+        
+        // Mettre à jour toute l'interface
+        this.languageManager.updateUI();
+        
+        // Recharger les données avec les nouvelles traductions
+        if (this.currentPage === PAGES.BROUILLON) {
+            this.loadBrouillonsData();
+        } else if (this.currentPage === PAGES.RAPPORTS) {
+            this.loadRapportsData();
+        }
+        
+        // Mettre à jour le titre de la page
+        document.title = t('app.title');
     }
 
     // Pré-chargement optimisé des utilisateurs
     async preloadUsers() {
         try {
             console.log('Pré-chargement des utilisateurs depuis Google Sheets optimisé...');
-            
-            // Charger les utilisateurs en arrière-plan (silencieux)
             await this.sheetsManager.getUsers();
-            
-            // Affichage des statistiques en console (optionnel)
             const stats = await this.sheetsManager.getUserStats();
             console.log('Statistiques utilisateurs:', stats);
         } catch (error) {
@@ -171,7 +208,7 @@ class AppManager {
 
         // Validation
         if (!username || !password) {
-            this.showError('Veuillez remplir tous les champs');
+            this.showError(t('login.error.empty'));
             return;
         }
 
@@ -186,16 +223,23 @@ class AppManager {
             const authResult = await this.sheetsManager.authenticateUser(username, password);
             
             if (!authResult.success) {
-                throw new Error(authResult.error);
+                // Messages d'erreur traduits
+                let errorKey = 'login.error.network';
+                if (authResult.error.includes('introuvable')) errorKey = 'login.error.notfound';
+                else if (authResult.error.includes('incorrect')) errorKey = 'login.error.wrongpass';
+                else if (authResult.error.includes('suspendu')) errorKey = 'login.error.inactive';
+                else if (authResult.error.includes('appareil')) errorKey = 'login.error.device';
+                
+                throw new Error(t(errorKey));
             }
 
             const user = authResult.user;
 
-            // Vérification Device ID (comme avant)
+            // Vérification Device ID
             const deviceId = Utils.generateDeviceId();
             
             if (user.deviceId && user.deviceId !== deviceId) {
-                throw new Error('Accès refusé - Ce compte est déjà lié à un autre appareil. Contactez l\'administrateur.');
+                throw new Error(t('login.error.device'));
             }
 
             // Premier login = enregistrement du device
@@ -216,7 +260,7 @@ class AppManager {
 
             this.updateUserInterface();
             this.showPage(PAGES.BROUILLON);
-            Utils.showToast(`Bienvenue ${this.currentUser.nom}`, 'success');
+            Utils.showToast(t('login.welcome', { name: this.currentUser.nom }), 'success');
 
         } catch (error) {
             console.error('Erreur lors de l\'authentification:', error);
@@ -239,11 +283,18 @@ class AppManager {
         if (this.currentUser) {
             const userNameEl = document.getElementById('userName');
             const userAvatarEl = document.getElementById('userAvatar');
+            const userRoleEl = document.getElementById('userRole');
             
             if (userNameEl) userNameEl.textContent = this.currentUser.nom;
             if (userAvatarEl) {
                 const initials = this.currentUser.nom.split(' ').map(n => n[0]).join('').substring(0, 2);
                 userAvatarEl.textContent = initials;
+            }
+            
+            // Rôle traduit
+            if (userRoleEl) {
+                const roleKey = `role.${this.currentUser.role}`;
+                userRoleEl.textContent = t(roleKey);
             }
         }
     }
@@ -302,10 +353,10 @@ class AppManager {
     async refreshUsers() {
         try {
             await this.sheetsManager.refreshCache();
-            Utils.showToast('Liste des utilisateurs mise à jour', 'success');
+            Utils.showToast(t('toast.users.updated'), 'success');
         } catch (error) {
             console.error('Erreur lors de la mise à jour:', error);
-            Utils.showToast('Erreur lors de la mise à jour', 'error');
+            Utils.showToast(t('toast.users.error'), 'error');
         }
     }
 
@@ -340,10 +391,20 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
+    if (typeof TRANSLATIONS === 'undefined') {
+        console.error('TRANSLATIONS non défini. Vérifiez que translations.js est chargé.');
+        return;
+    }
+
+    if (typeof LanguageManager === 'undefined') {
+        console.error('LanguageManager non défini. Vérifiez que language-manager.js est chargé.');
+        return;
+    }
+
     // Initialisation de l'app
     try {
         window.appManager = new AppManager();
-        console.log('Application initialisée avec succès (Google Sheets optimisé)');
+        console.log('Application initialisée avec succès (Google Sheets optimisé + i18n)');
     } catch (error) {
         console.error('Erreur lors de l\'initialisation:', error);
     }
@@ -360,8 +421,8 @@ window.addEventListener('beforeunload', function() {
 window.addEventListener('error', function(event) {
     console.error('Erreur globale:', event.error);
     
-    if (typeof Utils !== 'undefined') {
-        Utils.showToast('Une erreur inattendue s\'est produite', 'error');
+    if (typeof Utils !== 'undefined' && typeof t === 'function') {
+        Utils.showToast(t('toast.error.unexpected'), 'error');
     }
 });
 

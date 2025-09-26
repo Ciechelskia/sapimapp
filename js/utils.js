@@ -125,7 +125,7 @@ class Utils {
 
     // Génère du PDF à partir de texte avec loading
     static async generatePDF(title, content) {
-        const loadingToast = Utils.showToast('Génération du PDF...', 'info', 0);
+        const loadingToast = Utils.showToast(t('toast.report.pdf.generating'), 'info', 0);
         
         try {
             if (typeof window.jsPDF === 'undefined') {
@@ -147,7 +147,7 @@ class Utils {
             doc.setFont("helvetica", "normal");
             doc.setFontSize(10);
             doc.setTextColor(100, 100, 100);
-            doc.text(`Généré le ${new Date().toLocaleDateString('fr-FR')}`, 20, 45);
+            doc.text(`${t('date.generated')} ${new Date().toLocaleDateString()}`, 20, 45);
             
             doc.setFontSize(11);
             doc.setTextColor(0, 0, 0);
@@ -159,8 +159,8 @@ class Utils {
                 doc.setPage(i);
                 doc.setFontSize(8);
                 doc.setTextColor(150, 150, 150);
-                doc.text(`Page ${i} sur ${pageCount}`, 20, 285);
-                doc.text('Rapports Commerciaux - Application PWA', 105, 285, { align: 'center' });
+                doc.text(`Page ${i} / ${pageCount}`, 20, 285);
+                doc.text(t('app.title') + ' - Application PWA', 105, 285, { align: 'center' });
             }
             
             if (loadingToast) loadingToast.remove();
@@ -204,14 +204,14 @@ class Utils {
             URL.revokeObjectURL(url);
         }, 100);
         
-        Utils.showToast(`Téléchargement de ${filename}`, 'success');
+        Utils.showToast(t('toast.download', { filename }), 'success');
     }
 
     // Copie du texte dans le presse-papier
     static async copyToClipboard(text) {
         try {
             await navigator.clipboard.writeText(text);
-            Utils.showToast('Copié dans le presse-papier', 'success');
+            Utils.showToast(t('toast.clipboard.copied'), 'success');
             return true;
         } catch (err) {
             console.error('Erreur lors de la copie:', err);
@@ -225,10 +225,10 @@ class Utils {
                 textArea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textArea);
-                Utils.showToast('Copié dans le presse-papier', 'success');
+                Utils.showToast(t('toast.clipboard.copied'), 'success');
                 return true;
             } catch (fallbackErr) {
-                Utils.showToast('Impossible de copier', 'error');
+                Utils.showToast(t('toast.clipboard.error'), 'error');
                 return false;
             }
         }
@@ -239,12 +239,12 @@ class Utils {
         if (navigator.share) {
             try {
                 await navigator.share({ title, text });
-                Utils.showToast('Partagé avec succès', 'success');
+                Utils.showToast(t('toast.report.shared'), 'success');
                 return true;
             } catch (err) {
                 if (err.name !== 'AbortError') {
                     console.error('Erreur lors du partage:', err);
-                    Utils.showToast('Erreur lors du partage', 'error');
+                    Utils.showToast(t('toast.report.share.error'), 'error');
                 }
                 return false;
             }
@@ -386,8 +386,8 @@ class Utils {
                 container.innerHTML = `
                     <div class="empty-state">
                         <div class="icon">⚠️</div>
-                        <p>Chargement trop long</p>
-                        <p class="empty-subtitle">Vérifiez votre connexion internet</p>
+                        <p>${t('loading')}</p>
+                        <p class="empty-subtitle">${t('toast.network.offline')}</p>
                     </div>
                 `;
             }

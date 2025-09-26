@@ -111,18 +111,17 @@ class AudioManager {
         } catch (error) {
             console.error('Erreur microphone:', error);
             
-            let errorMessage = 'Erreur d\'accès au microphone: ';
+            // Messages d'erreur traduits
+            let errorKey = 'toast.audio.error.mic';
             if (error.name === 'NotAllowedError') {
-                errorMessage += 'Permission refusée. Autorisez l\'accès au microphone.';
+                errorKey = 'toast.audio.error.mic.denied';
             } else if (error.name === 'NotFoundError') {
-                errorMessage += 'Aucun microphone détecté.';
+                errorKey = 'toast.audio.error.mic.notfound';
             } else if (error.name === 'NotSupportedError') {
-                errorMessage += 'Enregistrement audio non supporté par ce navigateur.';
-            } else {
-                errorMessage += error.message;
+                errorKey = 'toast.audio.error.mic.notsupported';
             }
             
-            Utils.showToast(errorMessage, 'error');
+            Utils.showToast(t(errorKey), 'error');
         }
     }
 
@@ -149,7 +148,7 @@ class AudioManager {
             
             audio.play().catch(error => {
                 console.error('Erreur lecture audio:', error);
-                Utils.showToast('Erreur lors de la lecture audio', 'error');
+                Utils.showToast(t('toast.audio.error.mic'), 'error');
             });
             
             audio.addEventListener('ended', () => {
@@ -169,13 +168,12 @@ class AudioManager {
         this.updateUploadStatus('');
         this.uploadBtn.classList.remove('active');
         
-        // CORRECTION : Reset du file input pour permettre la réutilisation
         if (this.audioFileInput) {
             this.audioFileInput.value = '';
         }
         
         if (this.recordingStatus) {
-            this.recordingStatus.textContent = 'Appuyer pour enregistrer';
+            this.recordingStatus.textContent = t('drafts.record.button');
         }
         
         if (this.audioControls) {
@@ -195,16 +193,15 @@ class AudioManager {
 
         // Validation du type de fichier
         if (!Utils.isValidAudioFile(file)) {
-            Utils.showToast('Format de fichier non supporté', 'error');
-            // Reset du file input même en cas d'erreur
+            Utils.showToast(t('toast.audio.error.format'), 'error');
             event.target.value = '';
             return;
         }
 
         // Validation de la taille
         if (!Utils.isValidFileSize(file)) {
-            Utils.showToast(`Fichier trop volumineux (max: ${Utils.formatFileSize(CONFIG.MAX_FILE_SIZE)})`, 'error');
-            // Reset du file input même en cas d'erreur
+            const maxSize = Utils.formatFileSize(CONFIG.MAX_FILE_SIZE);
+            Utils.showToast(t('toast.audio.error.size', { size: maxSize }), 'error');
             event.target.value = '';
             return;
         }
@@ -216,8 +213,12 @@ class AudioManager {
         this.recordedBlob = null;
         this.resetRecordingUI();
         
-        // Mise à jour de l'interface
-        this.updateUploadStatus(`✅ ${file.name} (${Utils.formatFileSize(file.size)})`);
+        // Mise à jour de l'interface avec traduction
+        const successMsg = t('drafts.upload.success', { 
+            filename: file.name, 
+            size: Utils.formatFileSize(file.size) 
+        });
+        this.updateUploadStatus(successMsg);
         this.uploadBtn.classList.add('active');
         
         // Affichage des contrôles
@@ -229,9 +230,8 @@ class AudioManager {
             this.sendAudioBtn.classList.add('show');
         }
 
-        Utils.showToast('Fichier audio chargé avec succès', 'success');
+        Utils.showToast(t('toast.audio.loaded'), 'success');
         
-        // CORRECTION : Reset du file input pour permettre la réutilisation
         event.target.value = '';
     }
 
@@ -241,13 +241,13 @@ class AudioManager {
         const audioSource = this.uploadedFile || this.recordedBlob;
         
         if (!audioSource) {
-            Utils.showToast('Aucun audio à envoyer', 'error');
+            Utils.showToast(t('toast.audio.none'), 'error');
             return;
         }
 
         if (this.sendAudioBtn) {
             this.sendAudioBtn.disabled = true;
-            this.sendAudioBtn.textContent = '📤 Envoi en cours...';
+            this.sendAudioBtn.textContent = t('drafts.sending');
         }
 
         try {
@@ -277,7 +277,7 @@ class AudioManager {
                 isModified: false,
                 createdAt: new Date().toISOString(),
                 status: 'generating',
-                title: 'Génération en cours...',
+                title: t('status.generating'),
                 sourceType: this.uploadedFile ? 'upload' : 'recording',
                 sourceInfo: sourceInfo
             };
@@ -295,15 +295,15 @@ class AudioManager {
             await this.callN8nWebhook(audioBase64, brouillonId);
             console.log('=== ENVOI AUDIO TERMINÉ ===');
 
-            Utils.showToast('Audio envoyé pour traitement', 'success');
+            Utils.showToast(t('toast.audio.sent'), 'success');
 
         } catch (error) {
             console.error('Erreur dans sendAudio:', error);
-            Utils.showToast('Erreur lors de l\'envoi: ' + error.message, 'error');
+            Utils.showToast(t('toast.audio.error.mic') + ': ' + error.message, 'error');
         } finally {
             if (this.sendAudioBtn) {
                 this.sendAudioBtn.disabled = false;
-                this.sendAudioBtn.textContent = '📤 Envoyer pour traitement';
+                this.sendAudioBtn.textContent = t('drafts.send');
             }
         }
     }
@@ -372,7 +372,7 @@ class AudioManager {
         if (recording) {
             this.recordBtn.textContent = '⏹️';
             this.recordBtn.classList.add('recording');
-            this.recordingStatus.textContent = '🔴 Enregistrement en cours...';
+            this.recordingStatus.textContent = t('drafts.record.recording');
             
             if (this.audioControls) {
                 this.audioControls.classList.remove('show');
@@ -383,7 +383,7 @@ class AudioManager {
         } else {
             this.recordBtn.textContent = '⏺️';
             this.recordBtn.classList.remove('recording');
-            this.recordingStatus.textContent = '✅ Enregistrement terminé';
+            this.recordingStatus.textContent = t('drafts.record.done');
             
             if (this.audioControls) {
                 this.audioControls.classList.add('show');

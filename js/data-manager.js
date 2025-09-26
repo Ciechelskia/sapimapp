@@ -51,7 +51,7 @@ class DataManager {
             
             localStorage.setItem(this.storageKey, JSON.stringify(cleaned));
             console.log('Nettoyage automatique effectué');
-            Utils.showToast('Données anciennes supprimées pour économiser l\'espace', 'info');
+            Utils.showToast(t('toast.users.updated'), 'info');
         } catch (error) {
             console.error('Erreur lors du nettoyage:', error);
         }
@@ -94,7 +94,7 @@ class DataManager {
         if (brouillon) {
             brouillon.status = status;
             if (status === 'error') {
-                brouillon.title = 'Erreur lors de la génération';
+                brouillon.title = t('drafts.status.error');
             }
             
             this.saveAppData(data);
@@ -108,7 +108,7 @@ class DataManager {
         
         this.saveAppData(data);
         this.updateBrouillonsUI(data.brouillons);
-        Utils.showToast('Brouillon supprimé', 'success');
+        Utils.showToast(t('toast.draft.deleted'), 'success');
     }
 
     editBrouillon(brouillonId) {
@@ -117,21 +117,21 @@ class DataManager {
         
         if (brouillon) {
             const modal = Utils.createModal(
-                'Éditer le rapport',
+                t('modal.edit.title'),
                 `
                     <label style="display: block; margin-bottom: 10px; font-weight: bold;">
-                        Titre du rapport:
+                        ${t('modal.edit.title.label')}
                     </label>
-                    <input type="text" id="editTitle" class="modal-input" value="${Utils.escapeHtml(brouillon.title || 'Nouveau rapport')}">
+                    <input type="text" id="editTitle" class="modal-input" value="${Utils.escapeHtml(brouillon.title || t('new.report'))}">
                     
                     <label style="display: block; margin-bottom: 10px; font-weight: bold;">
-                        Contenu du rapport:
+                        ${t('modal.edit.content.label')}
                     </label>
                     <textarea id="editContent" class="modal-textarea">${Utils.escapeHtml(brouillon.generatedReport || '')}</textarea>
                 `,
                 [
-                    { text: 'Annuler', class: 'btn-secondary', onclick: 'this.closest("[data-modal]").remove()' },
-                    { text: '💾 Sauvegarder', class: 'btn-primary', onclick: `window.dataManager.saveEditedBrouillon('${brouillonId}', this)` }
+                    { text: t('modal.edit.cancel'), class: 'btn-secondary', onclick: 'this.closest("[data-modal]").remove()' },
+                    { text: t('modal.edit.save'), class: 'btn-primary', onclick: `window.dataManager.saveEditedBrouillon('${brouillonId}', this)` }
                 ]
             );
         }
@@ -143,7 +143,7 @@ class DataManager {
         const newContent = modal.querySelector('#editContent').value.trim();
         
         if (!newTitle || !newContent) {
-            Utils.showToast('Veuillez remplir le titre et le contenu', 'error');
+            Utils.showToast(t('toast.draft.error.empty'), 'error');
             return;
         }
         
@@ -159,12 +159,12 @@ class DataManager {
             this.updateBrouillonsUI(data.brouillons);
             
             modal.remove();
-            Utils.showToast('Rapport modifié avec succès', 'success');
+            Utils.showToast(t('toast.draft.saved'), 'success');
         }
     }
 
     async validateBrouillon(brouillonId) {
-        if (!confirm('Valider ce rapport ? Il sera déplacé dans les rapports finalisés et converti en PDF.')) {
+        if (!confirm(t('validate.confirm'))) {
             return;
         }
 
@@ -177,7 +177,7 @@ class DataManager {
             // Création du rapport
             const rapport = {
                 id: Utils.generateId('rapport_'),
-                title: brouillon.title || `Rapport - ${new Date().toLocaleDateString()}`,
+                title: brouillon.title || `${t('new.report')} - ${new Date().toLocaleDateString()}`,
                 content: brouillon.generatedReport,
                 validatedAt: new Date().toISOString(),
                 createdAt: brouillon.createdAt,
@@ -192,15 +192,15 @@ class DataManager {
 
             // Génération du PDF
             try {
-                Utils.showToast('Génération du PDF en cours...', 'info');
+                Utils.showToast(t('toast.report.pdf.generating'), 'info');
                 const pdf = await Utils.generatePDF(rapport.title, rapport.content);
                 rapport.pdfData = pdf.output('datauristring');
                 rapport.hasPdf = true;
                 rapport.pdfGenerated = true;
-                Utils.showToast('PDF généré avec succès', 'success');
+                Utils.showToast(t('toast.report.pdf.generated'), 'success');
             } catch (error) {
                 console.error('Erreur génération PDF:', error);
-                Utils.showToast('Erreur lors de la génération du PDF', 'error');
+                Utils.showToast(t('toast.report.pdf.error'), 'error');
             }
 
             data.rapports = data.rapports || [];
@@ -212,7 +212,7 @@ class DataManager {
             this.updateBrouillonsUI(data.brouillons);
             this.updateRapportsUI(data.rapports);
             
-            Utils.showToast('Rapport validé et converti en PDF', 'success');
+            Utils.showToast(t('toast.draft.validated'), 'success');
         }
     }
 
@@ -228,20 +228,23 @@ class DataManager {
         const rapport = data.rapports.find(r => r.id === rapportId);
         
         if (rapport) {
-            // CORRECTION : Suppression de tous les boutons, seulement la croix pour fermer
+            const validatedDate = Utils.formatDate(rapport.validatedAt);
+            const modifiedWarning = rapport.isModified ? `<br><em>${t('modal.view.modified')}</em>` : '';
+            const pdfAvailable = rapport.hasPdf ? `<br><strong>${t('modal.view.pdf.available')}</strong>` : '';
+            
             const modal = Utils.createModal(
                 `📋 ${rapport.title}`,
                 `
                     <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; color: #666;">
-                        <strong>Validé le:</strong> ${Utils.formatDate(rapport.validatedAt)}
-                        ${rapport.isModified ? '<br><em>⚠️ Rapport modifié après génération</em>' : ''}
-                        ${rapport.hasPdf ? '<br><strong>📄 PDF disponible</strong>' : ''}
+                        <strong>${t('date.validated')}:</strong> ${validatedDate}
+                        ${modifiedWarning}
+                        ${pdfAvailable}
                     </div>
                     <div style="line-height: 1.6; font-size: 15px; white-space: pre-wrap;">
                         ${Utils.escapeHtml(rapport.content)}
                     </div>
                 `,
-                [] // Pas de boutons, seulement la croix pour fermer
+                []
             );
         }
     }
@@ -252,10 +255,8 @@ class DataManager {
         
         if (!rapport) return;
         
-        // Si le rapport a un PDF, partager le PDF
         if (rapport.hasPdf && rapport.pdfData) {
             try {
-                // Conversion du data URI en blob PDF
                 const byteCharacters = atob(rapport.pdfData.split(',')[1]);
                 const byteNumbers = new Array(byteCharacters.length);
                 for (let i = 0; i < byteCharacters.length; i++) {
@@ -264,82 +265,65 @@ class DataManager {
                 const byteArray = new Uint8Array(byteNumbers);
                 const pdfBlob = new Blob([byteArray], { type: 'application/pdf' });
                 
-                // Création du fichier pour le partage
                 const filename = `${rapport.title.replace(/[^a-z0-9]/gi, '_')}.pdf`;
                 
-                // Tentative de partage natif avec fichier (Web Share API Level 2)
                 if (navigator.share && navigator.canShare) {
                     const file = new File([pdfBlob], filename, { type: 'application/pdf' });
                     
                     if (navigator.canShare({ files: [file] })) {
                         await navigator.share({
                             title: rapport.title,
-                            text: `Rapport commercial : ${rapport.title}`,
+                            text: `${t('new.report')}: ${rapport.title}`,
                             files: [file]
                         });
-                        Utils.showToast('PDF partagé avec succès', 'success');
+                        Utils.showToast(t('toast.report.shared'), 'success');
                         return;
                     }
                 }
                 
-                // Fallback : Création d'un lien mailto avec le PDF encodé
-                const pdfBase64 = rapport.pdfData.split(',')[1];
-                
-                // Pour les emails, on créé un lien de téléchargement temporaire
                 const pdfUrl = URL.createObjectURL(pdfBlob);
-                
-                // Création du contenu email
-                const emailSubject = encodeURIComponent(`Rapport commercial : ${rapport.title}`);
+                const emailSubject = encodeURIComponent(`${t('new.report')}: ${rapport.title}`);
                 const emailBody = encodeURIComponent(
-                    `Bonjour,\n\nVeuillez trouver ci-joint le rapport commercial : ${rapport.title}\n\n` +
-                    `Généré le : ${Utils.formatDate(rapport.validatedAt)}\n\n` +
+                    `Bonjour,\n\n${t('new.report')}: ${rapport.title}\n\n` +
+                    `${t('date.generated')}: ${Utils.formatDate(rapport.validatedAt)}\n\n` +
                     `Le PDF est disponible en téléchargement : ${pdfUrl}\n\n` +
                     `Cordialement`
                 );
                 
-                // Ouverture du client email
                 const mailtoLink = `mailto:?subject=${emailSubject}&body=${emailBody}`;
                 window.open(mailtoLink, '_blank');
                 
-                // Démarrer le téléchargement automatique du PDF
                 const a = document.createElement('a');
                 a.href = pdfUrl;
                 a.download = filename;
                 a.click();
                 
-                // Nettoyer l'URL après 5 secondes
                 setTimeout(() => URL.revokeObjectURL(pdfUrl), 5000);
                 
-                Utils.showToast('Email créé avec PDF en téléchargement', 'success');
+                Utils.showToast(t('toast.report.share.email'), 'success');
                 
             } catch (error) {
                 console.error('Erreur lors du partage PDF:', error);
-                Utils.showToast('Erreur lors du partage du PDF', 'error');
-                
-                // Fallback vers le partage texte
+                Utils.showToast(t('toast.report.share.error'), 'error');
                 this.shareRapportAsText(rapport);
             }
         } else {
-            // Pas de PDF disponible, partage texte
-            Utils.showToast('PDF non disponible, partage du texte', 'info');
+            Utils.showToast(t('toast.report.share.text'), 'info');
             this.shareRapportAsText(rapport);
         }
     }
 
-    // Nouvelle méthode pour le partage texte (fallback)
     async shareRapportAsText(rapport) {
         const shareText = `${rapport.title}\n\n${rapport.content}`;
         
-        // Tentative de partage natif
         const shared = await Utils.shareContent(rapport.title, shareText);
         
         if (!shared) {
-            // Fallback : copie dans le presse-papier
             const copied = await Utils.copyToClipboard(shareText);
             if (copied) {
-                Utils.showToast('Rapport copié dans le presse-papier', 'success');
+                Utils.showToast(t('toast.report.share.copied'), 'success');
             } else {
-                Utils.showToast('Erreur lors du partage', 'error');
+                Utils.showToast(t('toast.report.share.error'), 'error');
             }
         }
     }
@@ -349,12 +333,12 @@ class DataManager {
         const rapport = data.rapports.find(r => r.id === rapportId);
         
         if (rapport) {
-            const textContent = `${rapport.title}\n\nValidé le: ${Utils.formatDate(rapport.validatedAt)}\n\n${rapport.content}`;
+            const textContent = `${rapport.title}\n\n${t('date.validated')}: ${Utils.formatDate(rapport.validatedAt)}\n\n${rapport.content}`;
             const blob = new Blob([textContent], { type: 'text/plain' });
             const filename = `${rapport.title.replace(/[^a-z0-9]/gi, '_')}.txt`;
             
             Utils.downloadFile(blob, filename);
-            Utils.showToast('Rapport exporté', 'success');
+            Utils.showToast(t('toast.report.exported'), 'success');
         }
     }
 
@@ -363,7 +347,6 @@ class DataManager {
         const rapport = data.rapports.find(r => r.id === rapportId);
         
         if (rapport && rapport.pdfData) {
-            // Conversion du data URI en blob
             const byteCharacters = atob(rapport.pdfData.split(',')[1]);
             const byteNumbers = new Array(byteCharacters.length);
             for (let i = 0; i < byteCharacters.length; i++) {
@@ -374,9 +357,9 @@ class DataManager {
             
             const filename = `${rapport.title.replace(/[^a-z0-9]/gi, '_')}.pdf`;
             Utils.downloadFile(blob, filename);
-            Utils.showToast('PDF téléchargé', 'success');
+            Utils.showToast(t('toast.report.pdf.downloaded'), 'success');
         } else {
-            Utils.showToast('PDF non disponible', 'error');
+            Utils.showToast(t('toast.report.pdf.unavailable'), 'error');
         }
     }
 
@@ -400,14 +383,13 @@ class DataManager {
     // === MÉTHODES UTILITAIRES ===
 
     extractTitleFromContent(content) {
-        if (!content) return 'Rapport généré - En attente de validation';
+        if (!content) return t('report.title.default');
         
-        // Recherche des patterns de titre
         const patterns = [
             /titre\s*[:=]\s*([^\n\r]+)/i,
             /title\s*[:=]\s*([^\n\r]+)/i,
             /client\s*[:=]\s*([^\n\r]+)/i,
-            /^([^\n\r]{10,80})/  // Première ligne si pas trop courte/longue
+            /^([^\n\r]{10,80})/
         ];
         
         for (const pattern of patterns) {
@@ -417,7 +399,7 @@ class DataManager {
             }
         }
         
-        return 'Rapport généré - En attente de validation';
+        return t('report.title.default');
     }
 
     // === MISE À JOUR DE L'INTERFACE ===
@@ -430,8 +412,8 @@ class DataManager {
             container.innerHTML = `
                 <div class="empty-state">
                     <div class="icon">📄</div>
-                    <p>Aucun brouillon pour le moment</p>
-                    <p class="empty-subtitle">Enregistrez ou importez votre premier rapport vocal !</p>
+                    <p>${t('drafts.empty')}</p>
+                    <p class="empty-subtitle">${t('drafts.empty.subtitle')}</p>
                 </div>
             `;
             return;
@@ -450,7 +432,7 @@ class DataManager {
                 statusIcon = '⚠️';
             }
 
-            const content = brouillon.generatedReport || 'Génération en cours...';
+            const content = brouillon.generatedReport || t('status.generating');
             const truncatedContent = Utils.truncateText(content, 100);
 
             const sourceIndicator = brouillon.sourceType === 'upload' ? '📁' : '🎤';
@@ -458,22 +440,22 @@ class DataManager {
             return `
                 <div class="report-item ${statusClass}">
                     <div class="report-header">
-                        <div class="report-title">${statusIcon} ${sourceIndicator} ${Utils.escapeHtml(brouillon.title || 'Nouveau rapport')}</div>
+                        <div class="report-title">${statusIcon} ${sourceIndicator} ${Utils.escapeHtml(brouillon.title || t('new.report'))}</div>
                         <div class="report-date">${date}</div>
                     </div>
                     <div class="report-content">${Utils.escapeHtml(truncatedContent)}</div>
                     <div class="report-actions">
                         ${brouillon.status === 'ready' ? `
-                            <button class="action-btn edit-btn" onclick="window.dataManager.editBrouillon('${brouillon.id}')">✏️ Éditer</button>
-                            <button class="action-btn validate-btn" onclick="window.dataManager.validateBrouillon('${brouillon.id}')">✅ Valider</button>
+                            <button class="action-btn edit-btn" onclick="window.dataManager.editBrouillon('${brouillon.id}')">${t('drafts.action.edit')}</button>
+                            <button class="action-btn validate-btn" onclick="window.dataManager.validateBrouillon('${brouillon.id}')">${t('drafts.action.validate')}</button>
                         ` : ''}
                         ${brouillon.status === 'generating' ? `
                             <div class="loading-spinner"></div>
                         ` : ''}
                         ${brouillon.status === 'error' ? `
-                            <button class="action-btn edit-btn" disabled>🔄 Audio non disponible</button>
+                            <button class="action-btn edit-btn" disabled>${t('drafts.action.audio.unavailable')}</button>
                         ` : ''}
-                        <button class="action-btn delete-btn" onclick="window.dataManager.deleteBrouillon('${brouillon.id}')">🗑️ Supprimer</button>
+                        <button class="action-btn delete-btn" onclick="window.dataManager.deleteBrouillon('${brouillon.id}')">${t('drafts.action.delete')}</button>
                     </div>
                 </div>
             `;
@@ -500,8 +482,8 @@ class DataManager {
             container.innerHTML = `
                 <div class="empty-state">
                     <div class="icon">📋</div>
-                    <p>Aucun rapport finalisé</p>
-                    <p class="empty-subtitle">Validez vos brouillons pour les voir ici !</p>
+                    <p>${t('reports.empty')}</p>
+                    <p class="empty-subtitle">${t('reports.empty.subtitle')}</p>
                 </div>
             `;
             return;
@@ -517,16 +499,16 @@ class DataManager {
                 <div class="report-item" onclick="window.dataManager.viewRapport('${rapport.id}')">
                     <div class="report-header">
                         <div class="report-title">📋 ${pdfIndicator} ${sourceIndicator} ${Utils.escapeHtml(rapport.title)}</div>
-                        <div class="report-date">Validé le ${dateValidated}</div>
+                        <div class="report-date">${t('reports.validated.on')} ${dateValidated}</div>
                     </div>
                     <div class="report-content">${Utils.escapeHtml(truncatedContent)}</div>
                     <div class="report-actions">
-                        <button class="action-btn view-btn" onclick="event.stopPropagation(); window.dataManager.viewRapport('${rapport.id}')">👁️ Voir</button>
+                        <button class="action-btn view-btn" onclick="event.stopPropagation(); window.dataManager.viewRapport('${rapport.id}')">${t('reports.action.view')}</button>
                         ${rapport.hasPdf ? `
-                            <button class="action-btn download-pdf-btn" onclick="event.stopPropagation(); window.dataManager.downloadPDF('${rapport.id}')">📄 PDF</button>
+                            <button class="action-btn download-pdf-btn" onclick="event.stopPropagation(); window.dataManager.downloadPDF('${rapport.id}')">${t('reports.action.pdf')}</button>
                         ` : ''}
-                        <button class="action-btn share-btn" onclick="event.stopPropagation(); window.dataManager.shareRapport('${rapport.id}')">📤 Partager</button>
-                        <button class="action-btn export-btn" onclick="event.stopPropagation(); window.dataManager.exportRapport('${rapport.id}')">💾 Export TXT</button>
+                        <button class="action-btn share-btn" onclick="event.stopPropagation(); window.dataManager.shareRapport('${rapport.id}')">${t('reports.action.share')}</button>
+                        <button class="action-btn export-btn" onclick="event.stopPropagation(); window.dataManager.exportRapport('${rapport.id}')">${t('reports.action.export')}</button>
                     </div>
                 </div>
             `;
