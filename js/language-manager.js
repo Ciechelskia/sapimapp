@@ -171,22 +171,28 @@ class LanguageManager {
 
     // Mettre à jour toute l'interface avec les nouvelles traductions
     updateUI() {
-        // Mettre à jour les éléments avec data-i18n
+        // Mettre à jour les éléments avec data-i18n (SAUF ceux qui contiennent des compteurs)
         document.querySelectorAll('[data-i18n]').forEach(element => {
             const key = element.getAttribute('data-i18n');
-            const params = {};
             
-            // Récupérer les paramètres depuis data-i18n-params si présents
-            const paramsAttr = element.getAttribute('data-i18n-params');
-            if (paramsAttr) {
-                try {
-                    Object.assign(params, JSON.parse(paramsAttr));
-                } catch (e) {
-                    console.warn('Erreur parsing data-i18n-params:', e);
+            // Ne pas écraser les éléments qui contiennent des spans avec IDs (compteurs)
+            const hasCounters = element.querySelector('#rapportsCount') || element.querySelector('#pdfCount');
+            
+            if (!hasCounters) {
+                const params = {};
+                
+                // Récupérer les paramètres depuis data-i18n-params si présents
+                const paramsAttr = element.getAttribute('data-i18n-params');
+                if (paramsAttr) {
+                    try {
+                        Object.assign(params, JSON.parse(paramsAttr));
+                    } catch (e) {
+                        console.warn('Erreur parsing data-i18n-params:', e);
+                    }
                 }
+                
+                element.textContent = this.t(key, params);
             }
-            
-            element.textContent = this.t(key, params);
         });
 
         // Mettre à jour les placeholders
@@ -202,7 +208,7 @@ class LanguageManager {
         });
 
         // Notifier les autres composants
-        console.log('🔄 Interface mise à jour avec la langue:', this.currentLang);
+        console.log('✅ Interface mise à jour avec la langue:', this.currentLang);
     }
 
     // Traduire dynamiquement un texte HTML

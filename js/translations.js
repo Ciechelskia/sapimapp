@@ -1,13 +1,10 @@
-// Système de traductions multilingue
+// Système de traductions multilingue - Version finale
 const TRANSLATIONS = {
     fr: {
-        // Navigation et Header
         'app.title': 'Rapports Commerciaux',
         'nav.drafts': '📝 Brouillons',
         'nav.reports': '📊 Rapports',
         'nav.logout': '🚪 Déconnexion',
-        
-        // Page de connexion
         'login.title': 'Connexion',
         'login.username': '👤 Nom d\'utilisateur',
         'login.password': '🔒 Mot de passe',
@@ -20,8 +17,6 @@ const TRANSLATIONS = {
         'login.error.device': 'Accès refusé - Ce compte est déjà lié à un autre appareil. Contactez l\'administrateur.',
         'login.error.network': 'Erreur de connexion - Vérifiez votre connexion internet',
         'login.welcome': 'Bienvenue {name}',
-        
-        // Page Brouillons
         'drafts.title': '📝 Brouillons',
         'drafts.create': '🎤 Créer un nouveau rapport',
         'drafts.record': 'Enregistrer un vocal',
@@ -39,16 +34,12 @@ const TRANSLATIONS = {
         'drafts.list.title': '📋 Rapports en attente de validation :',
         'drafts.empty': 'Aucun brouillon pour le moment',
         'drafts.empty.subtitle': 'Enregistrez ou importez votre premier rapport vocal !',
-        
-        // Actions Brouillons
         'drafts.action.edit': '✏️ Éditer',
         'drafts.action.validate': '✅ Valider',
         'drafts.action.delete': '🗑️ Supprimer',
         'drafts.action.audio.unavailable': '🔄 Audio non disponible',
         'drafts.status.generating': '⏳ Génération en cours...',
         'drafts.status.error': '⚠️ Erreur lors de la génération',
-        
-        // Page Rapports
         'reports.title': '📊 Rapports finalisés',
         'reports.search': '🔍 Rechercher un rapport...',
         'reports.stats': '✅ Rapports validés : {count}',
@@ -56,14 +47,10 @@ const TRANSLATIONS = {
         'reports.empty': 'Aucun rapport finalisé',
         'reports.empty.subtitle': 'Validez vos brouillons pour les voir ici !',
         'reports.validated.on': 'Validé le',
-        
-        // Actions Rapports
         'reports.action.view': '👁️ Voir',
         'reports.action.pdf': '📄 PDF',
         'reports.action.share': '📤 Partager',
         'reports.action.export': '💾 Export TXT',
-        
-        // Modales
         'modal.edit.title': 'Éditer le rapport',
         'modal.edit.title.label': 'Titre du rapport:',
         'modal.edit.content.label': 'Contenu du rapport:',
@@ -71,8 +58,6 @@ const TRANSLATIONS = {
         'modal.edit.save': '💾 Sauvegarder',
         'modal.view.modified': '⚠️ Rapport modifié après génération',
         'modal.view.pdf.available': '📄 PDF disponible',
-        
-        // Messages Toast
         'toast.audio.loaded': 'Fichier audio chargé avec succès',
         'toast.audio.sent': 'Audio envoyé pour traitement',
         'toast.audio.none': 'Aucun audio à envoyer',
@@ -104,33 +89,21 @@ const TRANSLATIONS = {
         'toast.download': 'Téléchargement de {filename}',
         'toast.error.unexpected': 'Une erreur inattendue s\'est produite',
         'toast.network.offline': 'Mode hors-ligne - Données peut-être anciennes',
-        
-        // Validation
         'validate.confirm': 'Valider ce rapport ? Il sera déplacé dans les rapports finalisés et converti en PDF.',
-        
-        // Dates et formats
         'date.created': 'Créé le',
         'date.validated': 'Validé le',
         'date.generated': 'Généré le',
-        
-        // Statuts
         'status.pending': 'En attente',
         'status.generating': 'Génération en cours...',
         'status.ready': 'Prêt',
         'status.error': 'Erreur',
         'status.validated': 'Validé',
-        
-        // Indicateurs
         'indicator.recording': '🎤 Enregistrement',
         'indicator.upload': '📁 Fichier importé',
         'indicator.pdf': '📄 PDF',
-        
-        // Rôles
         'role.commercial': 'Commercial',
         'role.manager': 'Manager',
         'role.admin': 'Administrateur',
-        
-        // Divers
         'new.report': 'Nouveau rapport',
         'report.title.default': 'Rapport généré - En attente de validation',
         'loading': 'Chargement...',
@@ -138,13 +111,10 @@ const TRANSLATIONS = {
     },
     
     en: {
-        // Navigation and Header
         'app.title': 'Commercial Reports',
         'nav.drafts': '📝 Drafts',
         'nav.reports': '📊 Reports',
         'nav.logout': '🚪 Logout',
-        
-        // Login Page
         'login.title': 'Login',
         'login.username': '👤 Username',
         'login.password': '🔒 Password',
@@ -157,8 +127,6 @@ const TRANSLATIONS = {
         'login.error.device': 'Access denied - This account is already linked to another device. Contact administrator.',
         'login.error.network': 'Connection error - Check your internet connection',
         'login.welcome': 'Welcome {name}',
-        
-        // Drafts Page
         'drafts.title': '📝 Drafts',
         'drafts.create': '🎤 Create a new report',
         'drafts.record': 'Record audio',
@@ -176,16 +144,12 @@ const TRANSLATIONS = {
         'drafts.list.title': '📋 Reports pending validation:',
         'drafts.empty': 'No drafts yet',
         'drafts.empty.subtitle': 'Record or import your first voice report!',
-        
-        // Draft Actions
         'drafts.action.edit': '✏️ Edit',
         'drafts.action.validate': '✅ Validate',
         'drafts.action.delete': '🗑️ Delete',
         'drafts.action.audio.unavailable': '🔄 Audio unavailable',
         'drafts.status.generating': '⏳ Generating...',
         'drafts.status.error': '⚠️ Generation error',
-        
-        // Reports Page
         'reports.title': '📊 Finalized Reports',
         'reports.search': '🔍 Search reports...',
         'reports.stats': '✅ Validated reports: {count}',
@@ -193,14 +157,10 @@ const TRANSLATIONS = {
         'reports.empty': 'No finalized reports',
         'reports.empty.subtitle': 'Validate your drafts to see them here!',
         'reports.validated.on': 'Validated on',
-        
-        // Report Actions
         'reports.action.view': '👁️ View',
         'reports.action.pdf': '📄 PDF',
         'reports.action.share': '📤 Share',
         'reports.action.export': '💾 Export TXT',
-        
-        // Modals
         'modal.edit.title': 'Edit Report',
         'modal.edit.title.label': 'Report title:',
         'modal.edit.content.label': 'Report content:',
@@ -208,8 +168,6 @@ const TRANSLATIONS = {
         'modal.edit.save': '💾 Save',
         'modal.view.modified': '⚠️ Report modified after generation',
         'modal.view.pdf.available': '📄 PDF available',
-        
-        // Toast Messages
         'toast.audio.loaded': 'Audio file loaded successfully',
         'toast.audio.sent': 'Audio sent for processing',
         'toast.audio.none': 'No audio to send',
@@ -241,33 +199,21 @@ const TRANSLATIONS = {
         'toast.download': 'Downloading {filename}',
         'toast.error.unexpected': 'An unexpected error occurred',
         'toast.network.offline': 'Offline mode - Data may be outdated',
-        
-        // Validation
         'validate.confirm': 'Validate this report? It will be moved to finalized reports and converted to PDF.',
-        
-        // Dates and formats
         'date.created': 'Created on',
         'date.validated': 'Validated on',
         'date.generated': 'Generated on',
-        
-        // Status
         'status.pending': 'Pending',
         'status.generating': 'Generating...',
         'status.ready': 'Ready',
         'status.error': 'Error',
         'status.validated': 'Validated',
-        
-        // Indicators
         'indicator.recording': '🎤 Recording',
         'indicator.upload': '📁 Imported file',
         'indicator.pdf': '📄 PDF',
-        
-        // Roles
         'role.commercial': 'Sales Rep',
         'role.manager': 'Manager',
         'role.admin': 'Administrator',
-        
-        // Misc
         'new.report': 'New report',
         'report.title.default': 'Generated report - Pending validation',
         'loading': 'Loading...',
@@ -275,13 +221,10 @@ const TRANSLATIONS = {
     },
     
     zh: {
-        // 导航和头部
         'app.title': '商业报告',
         'nav.drafts': '📝 草稿',
         'nav.reports': '📊 报告',
         'nav.logout': '🚪 登出',
-        
-        // 登录页面
         'login.title': '登录',
         'login.username': '👤 用户名',
         'login.password': '🔒 密码',
@@ -294,8 +237,6 @@ const TRANSLATIONS = {
         'login.error.device': '访问被拒绝 - 此账户已关联到另一设备。请联系管理员。',
         'login.error.network': '连接错误 - 请检查您的网络连接',
         'login.welcome': '欢迎 {name}',
-        
-        // 草稿页面
         'drafts.title': '📝 草稿',
         'drafts.create': '🎤 创建新报告',
         'drafts.record': '录音',
@@ -313,16 +254,12 @@ const TRANSLATIONS = {
         'drafts.list.title': '📋 待验证报告：',
         'drafts.empty': '暂无草稿',
         'drafts.empty.subtitle': '录制或导入您的第一份语音报告！',
-        
-        // 草稿操作
         'drafts.action.edit': '✏️ 编辑',
         'drafts.action.validate': '✅ 验证',
         'drafts.action.delete': '🗑️ 删除',
         'drafts.action.audio.unavailable': '🔄 音频不可用',
         'drafts.status.generating': '⏳ 生成中...',
         'drafts.status.error': '⚠️ 生成错误',
-        
-        // 报告页面
         'reports.title': '📊 最终报告',
         'reports.search': '🔍 搜索报告...',
         'reports.stats': '✅ 已验证报告：{count}',
@@ -330,14 +267,10 @@ const TRANSLATIONS = {
         'reports.empty': '无最终报告',
         'reports.empty.subtitle': '验证您的草稿以在此处查看！',
         'reports.validated.on': '验证于',
-        
-        // 报告操作
         'reports.action.view': '👁️ 查看',
         'reports.action.pdf': '📄 PDF',
         'reports.action.share': '📤 分享',
         'reports.action.export': '💾 导出TXT',
-        
-        // 模态框
         'modal.edit.title': '编辑报告',
         'modal.edit.title.label': '报告标题：',
         'modal.edit.content.label': '报告内容：',
@@ -345,8 +278,6 @@ const TRANSLATIONS = {
         'modal.edit.save': '💾 保存',
         'modal.view.modified': '⚠️ 报告在生成后已修改',
         'modal.view.pdf.available': '📄 PDF可用',
-        
-        // 提示消息
         'toast.audio.loaded': '音频文件加载成功',
         'toast.audio.sent': '音频已发送处理',
         'toast.audio.none': '无音频可发送',
@@ -378,37 +309,135 @@ const TRANSLATIONS = {
         'toast.download': '下载 {filename}',
         'toast.error.unexpected': '发生意外错误',
         'toast.network.offline': '离线模式 - 数据可能过时',
-        
-        // 验证
         'validate.confirm': '验证此报告？它将移至最终报告并转换为PDF。',
-        
-        // 日期和格式
         'date.created': '创建于',
         'date.validated': '验证于',
         'date.generated': '生成于',
-        
-        // 状态
         'status.pending': '待处理',
         'status.generating': '生成中...',
         'status.ready': '就绪',
         'status.error': '错误',
         'status.validated': '已验证',
-        
-        // 指示器
         'indicator.recording': '🎤 录音',
         'indicator.upload': '📁 已导入文件',
         'indicator.pdf': '📄 PDF',
-        
-        // 角色
         'role.commercial': '销售代表',
         'role.manager': '经理',
         'role.admin': '管理员',
-        
-        // 其他
         'new.report': '新报告',
         'report.title.default': '已生成报告 - 待验证',
         'loading': '加载中...',
         'cache.info': '缓存信息显示在控制台中'
+    },
+    
+    ja: {
+        'app.title': '営業報告書',
+        'nav.drafts': '📝 下書き',
+        'nav.reports': '📊 報告書',
+        'nav.logout': '🚪 ログアウト',
+        'login.title': 'ログイン',
+        'login.username': '👤 ユーザー名',
+        'login.password': '🔒 パスワード',
+        'login.button': 'ログイン',
+        'login.loading': 'ログイン中...',
+        'login.error.empty': 'すべてのフィールドを入力してください',
+        'login.error.notfound': 'ユーザーが見つかりません',
+        'login.error.wrongpass': 'パスワードが正しくありません',
+        'login.error.inactive': 'アカウントが停止されています - 管理者に連絡してサブスクリプションを再開してください',
+        'login.error.device': 'アクセス拒否 - このアカウントは別のデバイスに既にリンクされています。管理者に連絡してください。',
+        'login.error.network': '接続エラー - インターネット接続を確認してください',
+        'login.welcome': 'ようこそ {name}',
+        'drafts.title': '📝 下書き',
+        'drafts.create': '🎤 新しい報告書を作成',
+        'drafts.record': '音声録音',
+        'drafts.record.button': '録音を開始',
+        'drafts.record.recording': '🔴 録音中...',
+        'drafts.record.done': '✅ 録音完了',
+        'drafts.record.play': '▶️ 再生',
+        'drafts.record.redo': '🔄 やり直し',
+        'drafts.upload': '音声ファイルをインポート',
+        'drafts.upload.button': '📁 ファイルを選択',
+        'drafts.upload.success': '✅ {filename} ({size})',
+        'drafts.or': 'または',
+        'drafts.send': '📤 処理のため送信',
+        'drafts.sending': '📤 送信中...',
+        'drafts.list.title': '📋 検証待ちの報告書：',
+        'drafts.empty': '下書きはまだありません',
+        'drafts.empty.subtitle': '最初の音声報告書を録音またはインポートしてください！',
+        'drafts.action.edit': '✏️ 編集',
+        'drafts.action.validate': '✅ 検証',
+        'drafts.action.delete': '🗑️ 削除',
+        'drafts.action.audio.unavailable': '🔄 音声利用不可',
+        'drafts.status.generating': '⏳ 生成中...',
+        'drafts.status.error': '⚠️ 生成エラー',
+        'reports.title': '📊 完成した報告書',
+        'reports.search': '🔍 報告書を検索...',
+        'reports.stats': '✅ 検証済み報告書：{count}',
+        'reports.stats.pdf': '📄 PDF生成数：{count}',
+        'reports.empty': '完成した報告書がありません',
+        'reports.empty.subtitle': '下書きを検証してここに表示してください！',
+        'reports.validated.on': '検証日',
+        'reports.action.view': '👁️ 表示',
+        'reports.action.pdf': '📄 PDF',
+        'reports.action.share': '📤 共有',
+        'reports.action.export': '💾 TXTエクスポート',
+        'modal.edit.title': '報告書を編集',
+        'modal.edit.title.label': '報告書タイトル：',
+        'modal.edit.content.label': '報告書内容：',
+        'modal.edit.cancel': 'キャンセル',
+        'modal.edit.save': '💾 保存',
+        'modal.view.modified': '⚠️ 生成後に報告書が変更されました',
+        'modal.view.pdf.available': '📄 PDF利用可能',
+        'toast.audio.loaded': '音声ファイルが正常に読み込まれました',
+        'toast.audio.sent': '音声を処理のため送信しました',
+        'toast.audio.none': '送信する音声がありません',
+        'toast.audio.error.format': 'サポートされていないファイル形式',
+        'toast.audio.error.size': 'ファイルが大きすぎます（最大：{size}）',
+        'toast.audio.error.mic': 'マイクアクセスエラー',
+        'toast.audio.error.mic.denied': '権限が拒否されました。マイクアクセスを許可してください。',
+        'toast.audio.error.mic.notfound': 'マイクが検出されませんでした。',
+        'toast.audio.error.mic.notsupported': 'このブラウザでは音声録音がサポートされていません。',
+        'toast.draft.deleted': '下書きを削除しました',
+        'toast.draft.saved': '報告書を正常に変更しました',
+        'toast.draft.validated': '報告書を検証してPDFに変換しました',
+        'toast.draft.error.empty': 'タイトルと内容を入力してください',
+        'toast.report.exported': '報告書をエクスポートしました',
+        'toast.report.pdf.downloaded': 'PDFをダウンロードしました',
+        'toast.report.pdf.unavailable': 'PDF利用不可',
+        'toast.report.pdf.generating': 'PDF生成中...',
+        'toast.report.pdf.generated': 'PDFを正常に生成しました',
+        'toast.report.pdf.error': 'PDF生成エラー',
+        'toast.report.shared': '正常に共有しました',
+        'toast.report.share.email': 'PDFダウンロード付きメールを作成しました',
+        'toast.report.share.text': 'PDF利用不可、テキストを共有',
+        'toast.report.share.error': 'PDF共有エラー',
+        'toast.report.share.copied': '報告書をクリップボードにコピーしました',
+        'toast.users.updated': 'ユーザーリストを更新しました',
+        'toast.users.error': '更新エラー',
+        'toast.clipboard.copied': 'クリップボードにコピーしました',
+        'toast.clipboard.error': 'コピーできません',
+        'toast.download': '{filename}をダウンロード中',
+        'toast.error.unexpected': '予期しないエラーが発生しました',
+        'toast.network.offline': 'オフラインモード - データが古い可能性があります',
+        'validate.confirm': 'この報告書を検証しますか？完成した報告書に移動し、PDFに変換されます。',
+        'date.created': '作成日',
+        'date.validated': '検証日',
+        'date.generated': '生成日',
+        'status.pending': '保留中',
+        'status.generating': '生成中...',
+        'status.ready': '準備完了',
+        'status.error': 'エラー',
+        'status.validated': '検証済み',
+        'indicator.recording': '🎤 録音',
+        'indicator.upload': '📁 インポートされたファイル',
+        'indicator.pdf': '📄 PDF',
+        'role.commercial': '営業担当',
+        'role.manager': 'マネージャー',
+        'role.admin': '管理者',
+        'new.report': '新しい報告書',
+        'report.title.default': '生成された報告書 - 検証待ち',
+        'loading': '読み込み中...',
+        'cache.info': 'キャッシュ情報がコンソールに表示されます'
     }
 };
 
