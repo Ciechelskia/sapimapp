@@ -13,21 +13,16 @@ class LanguageManager {
         this.init();
     }
 
-    // Initialisation
+    // Initialisation - FRANÇAIS PAR DÉFAUT
     init() {
-        // Charger la langue sauvegardée ou détecter la langue du navigateur
+        // Charger la langue sauvegardée (priorité absolue)
         const savedLang = localStorage.getItem(this.storageKey);
         
         if (savedLang && this.supportedLanguages[savedLang]) {
             this.currentLang = savedLang;
         } else {
-            // Détection automatique de la langue du navigateur
-            const browserLang = navigator.language || navigator.userLanguage;
-            const langCode = browserLang.split('-')[0].toLowerCase();
-            
-            if (this.supportedLanguages[langCode]) {
-                this.currentLang = langCode;
-            }
+            // TOUJOURS utiliser le français par défaut si aucune langue sauvegardée
+            this.currentLang = 'fr';
         }
         
         console.log(`🌍 Langue initialisée: ${this.currentLang}`);
@@ -60,8 +55,14 @@ class LanguageManager {
 
     // Traduire une clé
     translate(key, params = {}) {
-        // Récupérer la traduction
-        const translation = TRANSLATIONS[this.currentLang]?.[key] || TRANSLATIONS['fr']?.[key] || key;
+        // Récupérer la traduction dans la langue courante
+        let translation = TRANSLATIONS[this.currentLang]?.[key];
+        
+        // Si pas de traduction, fallback vers le français
+        if (!translation) {
+            console.warn(`⚠️ Traduction manquante pour "${key}" en ${this.currentLang}`);
+            translation = TRANSLATIONS['fr']?.[key] || key;
+        }
         
         // Remplacer les paramètres {name}, {count}, etc.
         return translation.replace(/\{(\w+)\}/g, (match, param) => {
@@ -171,7 +172,9 @@ class LanguageManager {
 
     // Mettre à jour toute l'interface avec les nouvelles traductions
     updateUI() {
-        // Mettre à jour les éléments avec data-i18n (SAUF ceux qui contiennent des compteurs)
+        console.log(`🔄 Mise à jour UI avec langue: ${this.currentLang}`);
+        
+        // Mettre à jour les éléments avec data-i18n
         document.querySelectorAll('[data-i18n]').forEach(element => {
             const key = element.getAttribute('data-i18n');
             
@@ -191,7 +194,8 @@ class LanguageManager {
                     }
                 }
                 
-                element.textContent = this.t(key, params);
+                const translatedText = this.t(key, params);
+                element.textContent = translatedText;
             }
         });
 
@@ -207,8 +211,7 @@ class LanguageManager {
             element.title = this.t(key);
         });
 
-        // Notifier les autres composants
-        console.log('✅ Interface mise à jour avec la langue:', this.currentLang);
+        console.log(`✅ Interface mise à jour avec la langue: ${this.currentLang}`);
     }
 
     // Traduire dynamiquement un texte HTML
