@@ -45,12 +45,23 @@ class LanguageManager {
         
         console.log(`🌍 Langue changée: ${langCode}`);
         
+        // NOUVEAU : Mettre à jour TOUS les sélecteurs de langue présents dans la page
+        this.updateAllLanguageSelectors();
+        
         // Déclencher un événement personnalisé pour notifier le changement
         window.dispatchEvent(new CustomEvent('languageChanged', { 
             detail: { language: langCode } 
         }));
         
         return true;
+    }
+
+    // NOUVELLE MÉTHODE : Mettre à jour tous les sélecteurs de langue
+    updateAllLanguageSelectors() {
+        const allSelectors = document.querySelectorAll('.language-selector');
+        allSelectors.forEach(container => {
+            this.updateLanguageSelector(container);
+        });
     }
 
     // Traduire une clé
@@ -124,7 +135,6 @@ class LanguageManager {
                 
                 if (this.setLanguage(newLang)) {
                     // Mettre à jour l'interface
-                    this.updateLanguageSelector(container);
                     this.updateUI();
                 }
                 
@@ -142,13 +152,13 @@ class LanguageManager {
 
     // Mettre à jour le sélecteur de langue
     updateLanguageSelector(container) {
-        const langBtn = container.querySelector('#langBtn');
-        const langFlag = langBtn.querySelector('.lang-flag');
-        const langCode = langBtn.querySelector('.lang-code');
+        const langBtn = container.querySelector('.lang-btn');
+        const langFlag = langBtn?.querySelector('.lang-flag');
+        const langCode = langBtn?.querySelector('.lang-code');
         const langOptions = container.querySelectorAll('.lang-option');
 
-        langFlag.textContent = this.getCurrentLanguageInfo().flag;
-        langCode.textContent = this.currentLang.toUpperCase();
+        if (langFlag) langFlag.textContent = this.getCurrentLanguageInfo().flag;
+        if (langCode) langCode.textContent = this.currentLang.toUpperCase();
 
         langOptions.forEach(option => {
             const optionLang = option.dataset.lang;

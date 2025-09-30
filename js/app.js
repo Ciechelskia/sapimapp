@@ -33,7 +33,7 @@ class AppManager {
         // Injecter les styles du sélecteur de langue
         this.languageManager.injectStyles();
         
-        // Créer et insérer le sélecteur de langue
+        // Créer et insérer les sélecteurs de langue (login + header)
         this.initLanguageSelector();
         
         // Écouter les changements de langue
@@ -45,12 +45,20 @@ class AppManager {
         this.preloadUsers();
     }
 
-    // Initialiser le sélecteur de langue
+    // Initialiser les sélecteurs de langue (login ET header)
     initLanguageSelector() {
-        const container = document.getElementById('languageSelectorContainer');
-        if (container) {
-            const selector = this.languageManager.createLanguageSelector();
-            container.appendChild(selector);
+        // Sélecteur dans le header (après connexion)
+        const headerContainer = document.getElementById('languageSelectorContainer');
+        if (headerContainer) {
+            const headerSelector = this.languageManager.createLanguageSelector();
+            headerContainer.appendChild(headerSelector);
+        }
+        
+        // Sélecteur sur la page de login (avant connexion)
+        const loginContainer = document.getElementById('loginLanguageSelector');
+        if (loginContainer) {
+            const loginSelector = this.languageManager.createLanguageSelector();
+            loginContainer.appendChild(loginSelector);
         }
     }
 
@@ -295,6 +303,11 @@ class AppManager {
             if (userRoleEl) {
                 const roleKey = `role.${this.currentUser.role}`;
                 userRoleEl.textContent = t(roleKey);
+            }
+            
+            // NOUVEAU : Forcer la mise à jour du sélecteur de langue dans le header
+            if (this.languageManager) {
+                this.languageManager.updateAllLanguageSelectors();
             }
         }
     }

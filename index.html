@@ -36,6 +36,9 @@
             
             <!-- PAGE LOGIN -->
             <div class="page login-page" id="loginPage" style="display: block;">
+                <!-- SÉLECTEUR DE LANGUE SUR LA PAGE LOGIN -->
+                <div class="login-language-selector" id="loginLanguageSelector"></div>
+                
                 <div class="logo">🏢</div>
                 <h1 data-i18n="login.title">Connexion</h1>
                 <form id="loginForm">
@@ -112,10 +115,18 @@
                     <input type="text" class="search-input" id="searchInput" data-i18n-placeholder="reports.search" placeholder="🔍 Rechercher un rapport...">
                 </div>
 
-                <!-- Stats -->
-                <div class="stats-section">
-                    <span><span data-i18n="reports.stats" data-i18n-params='{"count":""}'>✅ Rapports validés :</span> <span id="rapportsCount">0</span></span>
-                    <span><span data-i18n="reports.stats.pdf" data-i18n-params='{"count":""}'>📄 PDF générés :</span> <span id="pdfCount">0</span></span>
+                <!-- Stats avec bouton créer dossier -->
+                <div class="stats-section" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+                        <span><span data-i18n="reports.stats" data-i18n-params='{"count":""}'>✅ Rapports validés :</span> <span id="rapportsCount">0</span></span>
+                        <span><span data-i18n="reports.stats.pdf" data-i18n-params='{"count":""}'>📄 PDF générés :</span> <span id="pdfCount">0</span></span>
+                    </div>
+                    <button class="action-btn" id="createFolderBtnTop" style="background: var(--gradient-main); color: white; padding: 10px 20px; border-radius: 20px; font-weight: 600; font-size: 13px; box-shadow: 0 2px 10px rgba(37, 99, 235, 0.3); transition: all 0.3s ease;" 
+                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 15px rgba(37, 99, 235, 0.4)';" 
+                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 10px rgba(37, 99, 235, 0.3)';"
+                            onclick="window.dataManager.showCreateFolderModal()">
+                        ➕ <span data-i18n="folder.create.button">Créer un dossier</span>
+                    </button>
                 </div>
 
                 <!-- Liste des rapports -->
@@ -139,7 +150,6 @@
     
     <!-- Google Sheets Manager avec cache optimisé -->
     <script>
-    // Gestionnaire Google Sheets optimisé pour de meilleures performances
     class GoogleSheetsManager {
         constructor() {
             this.SHEET_ID = '1I2SdNqwVB3bU-h3GoYvKjPRm2WhjpPdPc77rJKML9KEr';
@@ -313,7 +323,7 @@
                     password: "pass123",
                     nom: "Jean Dupont",
                     role: "commercial",
-                    statut: "actif",
+                    statut: "inactif",
                     deviceId: null,
                     isActive: false,
                     dateCreation: "2024-09-23"
@@ -323,28 +333,6 @@
                     username: "andreac",
                     password: "pass123",
                     nom: "Andrea Ciechelski",
-                    role: "commercial",
-                    statut: "actif",
-                    deviceId: null,
-                    isActive: true,
-                    dateCreation: "2024-09-24"
-                },
-                {
-                    id: 3,
-                    username: "cocolocow",
-                    password: "pass123",
-                    nom: "Corentin havouis",
-                    role: "commercial",
-                    statut: "actif",
-                    deviceId: null,
-                    isActive: true,
-                    dateCreation: "2024-09-24"
-                },
-                {
-                    id: 4,
-                    username: "arthurf",
-                    password: "pass123",
-                    nom: "arthur fremion",
                     role: "commercial",
                     statut: "actif",
                     deviceId: null,

@@ -1637,3 +1637,25 @@ body {
         border: 2px solid var(--gray-900);
     }
 }
+/* === AJOUTS POUR SÉLECTEUR DE LANGUE SUR PAGE LOGIN === */
+
+/* Sélecteur de langue sur la page de connexion */
+.login-language-selector {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+}
+
+/* Ajustement pour que la page login soit relative */
+.login-page {
+    position: relative;
+}
+
+/* Ajustement responsive pour mobile */
+@media (max-width: 480px) {
+    .login-language-selector {
+        top: 10px;
+        right: 10px;
+    }
+}

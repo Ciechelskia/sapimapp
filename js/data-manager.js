@@ -15,13 +15,14 @@ class DataManager {
                 const data = JSON.parse(saved);
                 return {
                     brouillons: data.brouillons || [],
-                    rapports: data.rapports || []
+                    rapports: data.rapports || [],
+                    folders: data.folders || []
                 };
             }
         } catch (error) {
             console.error('Erreur lecture localStorage:', error);
         }
-        return { brouillons: [], rapports: [] };
+        return { brouillons: [], rapports: [], folders: [] };
     }
 
     saveAppData(data) {
@@ -46,6 +47,7 @@ class DataManager {
             const cleaned = {
                 brouillons: data.brouillons ? data.brouillons.slice(0, this.maxBrouillons) : [],
                 rapports: data.rapports ? data.rapports.slice(0, this.maxRapports) : [],
+                folders: data.folders || [],
                 lastSaved: new Date().toISOString()
             };
             
@@ -54,6 +56,227 @@ class DataManager {
             Utils.showToast(t('toast.users.updated'), 'info');
         } catch (error) {
             console.error('Erreur lors du nettoyage:', error);
+        }
+    }
+
+    // === GESTION DES DOSSIERS ===
+
+    getFolders() {
+        const data = this.loadAppData();
+        return data.folders || [];
+    }
+
+    createFolder(folderName) {
+        if (!folderName || !folderName.trim()) {
+            Utils.showToast(t('toast.folder.error.empty'), 'error');
+            return null;
+        }
+
+        const data = this.loadAppData();
+        data.folders = data.folders || [];
+
+        // Vérifier si le dossier existe déjà
+        if (data.folders.find(f => f.name.toLowerCase() === folderName.toLowerCase())) {
+            Utils.showToast(t('toast.folder.error.exists'), 'error');
+            return null;
+        }
+
+        const folder = {
+            id: Utils.generateId('folder_'),
+            name: folderName.trim(),
+            createdAt: new Date().toISOString(),
+            color: this.getRandomFolderColor()
+        };
+
+        data.folders.push(folder);
+        this.saveAppData(data);
+        
+        Utils.showToast(t('toast.folder.created', { name: folderName }), 'success');
+        return folder;
+    }
+
+    deleteFolder(folderId) {
+        if (!confirm(t('folder.delete.confirm'))) {
+            return;
+        }
+
+        const data = this.loadAppData();
+        
+        // Déplacer tous les rapports du dossier vers "Sans dossier"
+        if (data.rapports) {
+            data.rapports.forEach(rapport => {
+                if (rapport.folderId === folderId) {
+                    rapport.folderId = null;
+                }
+            });
+        }
+
+        data.folders = data.folders.filter(f => f.id !== folderId);
+        this.saveAppData(data);
+        
+        this.updateRapportsUI(data.rapports);
+        Utils.showToast(t('toast.folder.deleted'), 'success');
+    }
+
+    renameFolder(folderId) {
+        const data = this.loadAppData();
+        const folder = data.folders.find(f => f.id === folderId);
+        
+        if (!folder) return;
+
+        const modal = Utils.createModal(
+            t('modal.folder.rename.title'),
+            `
+                <label style="display: block; margin-bottom: 10px; font-weight: bold;">
+                    ${t('modal.folder.rename.label')}
+                </label>
+                <input type="text" id="folderNameInput" class="modal-input" value="${Utils.escapeHtml(folder.name)}" placeholder="${t('modal.folder.rename.placeholder')}">
+            `,
+            [
+                { text: t('modal.edit.cancel'), class: 'btn-secondary', onclick: 'this.closest("[data-modal]").remove()' },
+                { text: t('modal.edit.save'), class: 'btn-primary', onclick: `window.dataManager.saveFolderRename('${folderId}', this)` }
+            ]
+        );
+    }
+
+    saveFolderRename(folderId, buttonElement) {
+        const modal = buttonElement.closest('[data-modal]');
+        const newName = modal.querySelector('#folderNameInput').value.trim();
+        
+        if (!newName) {
+            Utils.showToast(t('toast.folder.error.empty'), 'error');
+            return;
+        }
+
+        const data = this.loadAppData();
+        const folder = data.folders.find(f => f.id === folderId);
+        
+        if (folder) {
+            folder.name = newName;
+            this.saveAppData(data);
+            this.updateRapportsUI(data.rapports);
+            modal.remove();
+            Utils.showToast(t('toast.folder.renamed'), 'success');
+        }
+    }
+
+    moveRapportToFolder(rapportId, newFolderId) {
+        const data = this.loadAppData();
+        const rapport = data.rapports.find(r => r.id === rapportId);
+        
+        if (rapport) {
+            rapport.folderId = newFolderId;
+            this.saveAppData(data);
+            this.updateRapportsUI(data.rapports);
+            
+            const folderName = newFolderId ? data.folders.find(f => f.id === newFolderId)?.name : t('folder.none');
+            Utils.showToast(t('toast.report.moved', { folder: folderName }), 'success');
+        }
+    }
+
+    getRandomFolderColor() {
+        const colors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899'];
+        return colors[Math.floor(Math.random() * colors.length)];
+    }
+
+    showCreateFolderModal() {
+        const modal = Utils.createModal(
+            t('modal.folder.create.title'),
+            `
+                <label style="display: block; margin-bottom: 10px; font-weight: bold;">
+                    ${t('modal.folder.create.label')}
+                </label>
+                <input type="text" id="newFolderName" class="modal-input" placeholder="${t('modal.folder.create.placeholder')}" autofocus>
+            `,
+            [
+                { text: t('modal.edit.cancel'), class: 'btn-secondary', onclick: 'this.closest("[data-modal]").remove()' },
+                { text: t('modal.folder.create.button'), class: 'btn-primary', onclick: 'window.dataManager.handleCreateFolder(this)' }
+            ]
+        );
+
+        // Enter pour valider
+        const input = modal.querySelector('#newFolderName');
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                window.dataManager.handleCreateFolder(e.target);
+            }
+        });
+    }
+
+    handleCreateFolder(element) {
+        const modal = element.closest('[data-modal]');
+        const input = modal.querySelector('#newFolderName');
+        const folderName = input.value.trim();
+
+        if (this.createFolder(folderName)) {
+            modal.remove();
+            this.updateRapportsUI(this.getRapports());
+        }
+    }
+
+    showMoveFolderModal(rapportId) {
+        const data = this.loadAppData();
+        const folders = data.folders || [];
+        const rapport = data.rapports.find(r => r.id === rapportId);
+
+        const foldersOptions = [
+            `<option value="">${t('folder.none')}</option>`,
+            ...folders.map(folder => 
+                `<option value="${folder.id}" ${rapport.folderId === folder.id ? 'selected' : ''}>
+                    📁 ${Utils.escapeHtml(folder.name)}
+                </option>`
+            )
+        ].join('');
+
+        const modal = Utils.createModal(
+            t('modal.move.title'),
+            `
+                <label style="display: block; margin-bottom: 10px; font-weight: bold;">
+                    ${t('modal.move.label')}
+                </label>
+                <select id="folderSelect" class="modal-input" style="cursor: pointer;">
+                    ${foldersOptions}
+                </select>
+            `,
+            [
+                { text: t('modal.edit.cancel'), class: 'btn-secondary', onclick: 'this.closest("[data-modal]").remove()' },
+                { text: t('modal.move.button'), class: 'btn-primary', onclick: `window.dataManager.handleMoveRapport('${rapportId}', this)` }
+            ]
+        );
+    }
+
+    handleMoveRapport(rapportId, buttonElement) {
+        const modal = buttonElement.closest('[data-modal]');
+        const select = modal.querySelector('#folderSelect');
+        const folderId = select.value || null;
+
+        this.moveRapportToFolder(rapportId, folderId);
+        modal.remove();
+    }
+
+    toggleFolder(folderId) {
+        const content = document.getElementById(`folder-content-${folderId}`);
+        const arrow = document.getElementById(`folder-arrow-${folderId}`);
+        
+        if (!content || !arrow) return;
+        
+        const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+        
+        if (isOpen) {
+            // Fermer
+            content.style.maxHeight = '0px';
+            content.style.padding = '0 25px';
+            arrow.style.transform = 'rotate(0deg)';
+        } else {
+            // Ouvrir
+            content.style.maxHeight = content.scrollHeight + 'px';
+            content.style.padding = '0 25px';
+            arrow.style.transform = 'rotate(90deg)';
+            
+            // Ajuster la hauteur après l'animation
+            setTimeout(() => {
+                content.style.maxHeight = 'fit-content';
+            }, 400);
         }
     }
 
@@ -164,8 +387,48 @@ class DataManager {
     }
 
     async validateBrouillon(brouillonId) {
-        if (!confirm(t('validate.confirm'))) {
-            return;
+        const data = this.loadAppData();
+        const folders = data.folders || [];
+
+        // Si des dossiers existent, proposer le choix
+        if (folders.length > 0) {
+            const foldersOptions = [
+                `<option value="">${t('folder.none')}</option>`,
+                ...folders.map(folder => 
+                    `<option value="${folder.id}">📁 ${Utils.escapeHtml(folder.name)}</option>`
+                )
+            ].join('');
+
+            const modal = Utils.createModal(
+                t('modal.validate.title'),
+                `
+                    <p style="margin-bottom: 20px;">${t('modal.validate.message')}</p>
+                    <label style="display: block; margin-bottom: 10px; font-weight: bold;">
+                        ${t('modal.validate.folder.label')}
+                    </label>
+                    <select id="validateFolderSelect" class="modal-input" style="cursor: pointer;">
+                        ${foldersOptions}
+                    </select>
+                `,
+                [
+                    { text: t('modal.edit.cancel'), class: 'btn-secondary', onclick: 'this.closest("[data-modal]").remove()' },
+                    { text: t('drafts.action.validate'), class: 'btn-primary', onclick: `window.dataManager.confirmValidateBrouillon('${brouillonId}', this)` }
+                ]
+            );
+        } else {
+            // Pas de dossiers, validation directe
+            this.confirmValidateBrouillon(brouillonId);
+        }
+    }
+
+    async confirmValidateBrouillon(brouillonId, buttonElement = null) {
+        let selectedFolderId = null;
+
+        if (buttonElement) {
+            const modal = buttonElement.closest('[data-modal]');
+            const select = modal.querySelector('#validateFolderSelect');
+            selectedFolderId = select.value || null;
+            modal.remove();
         }
 
         const data = this.loadAppData();
@@ -181,6 +444,7 @@ class DataManager {
                 content: brouillon.generatedReport,
                 validatedAt: new Date().toISOString(),
                 createdAt: brouillon.createdAt,
+                folderId: selectedFolderId,
                 sharedWith: [],
                 status: 'validated',
                 isModified: brouillon.isModified,
@@ -475,9 +739,11 @@ class DataManager {
             const pdfCount = rapports ? rapports.filter(r => r.hasPdf).length : 0;
             pdfCounter.textContent = pdfCount;
         }
-        
         if (!container) return;
         
+        const data = this.loadAppData();
+        const folders = data.folders || [];
+
         if (!rapports || rapports.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
@@ -489,29 +755,139 @@ class DataManager {
             return;
         }
 
-        container.innerHTML = rapports.map(rapport => {
-            const dateValidated = new Date(rapport.validatedAt).toLocaleDateString();
-            const truncatedContent = Utils.truncateText(rapport.content, 150);
-            const sourceIndicator = rapport.sourceType === 'upload' ? '📁' : '🎤';
-            const pdfIndicator = rapport.hasPdf ? '📄' : '';
+        // Grouper par dossier
+        const rapportsParDossier = {
+            null: rapports.filter(r => !r.folderId)
+        };
+
+        folders.forEach(folder => {
+            rapportsParDossier[folder.id] = rapports.filter(r => r.folderId === folder.id);
+        });
+
+        let html = '';
+
+        // Afficher les dossiers repliables
+        folders.forEach(folder => {
+            const folderRapports = rapportsParDossier[folder.id] || [];
             
-            return `
-                <div class="report-item" onclick="window.dataManager.viewRapport('${rapport.id}')">
-                    <div class="report-header">
-                        <div class="report-title">📋 ${pdfIndicator} ${sourceIndicator} ${Utils.escapeHtml(rapport.title)}</div>
-                        <div class="report-date">${t('reports.validated.on')} ${dateValidated}</div>
+            html += `
+                <div class="folder-section" style="
+                    margin-bottom: 20px; 
+                    border: 2px solid ${folder.color}; 
+                    border-radius: 20px; 
+                    padding: 0;
+                    background: linear-gradient(135deg, ${folder.color}08, ${folder.color}03);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+                    overflow: hidden;
+                    transition: all 0.3s ease;
+                ">
+                    <!-- En-tête cliquable du dossier -->
+                    <div onclick="window.dataManager.toggleFolder('${folder.id}')" style="
+                        display: flex; 
+                        justify-content: space-between; 
+                        align-items: center; 
+                        padding: 20px 25px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        background: linear-gradient(135deg, ${folder.color}15, ${folder.color}08);
+                    " onmouseover="this.style.background='linear-gradient(135deg, ${folder.color}25, ${folder.color}15)'" 
+                       onmouseout="this.style.background='linear-gradient(135deg, ${folder.color}15, ${folder.color}08)'">
+                        
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <span id="folder-arrow-${folder.id}" style="font-size: 20px; transition: transform 0.3s ease; color: ${folder.color};">▶</span>
+                            <h3 style="margin: 0; color: ${folder.color}; font-size: 20px; display: flex; align-items: center; gap: 12px; font-weight: 700;">
+                                📁 ${Utils.escapeHtml(folder.name)}
+                                <span style="background: ${folder.color}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 700; box-shadow: 0 2px 8px ${folder.color}40;">
+                                    ${folderRapports.length}
+                                </span>
+                            </h3>
+                        </div>
+                        
+                        <div onclick="event.stopPropagation();" style="display: flex; gap: 10px;">
+                            <button class="action-btn" style="background: var(--gradient-warning); color: white; padding: 8px 16px; font-size: 12px; border-radius: 20px; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);" onclick="window.dataManager.renameFolder('${folder.id}')">
+                                ✏️ ${t('folder.action.rename')}
+                            </button>
+                            <button class="action-btn" style="background: var(--gradient-error); color: white; padding: 8px 16px; font-size: 12px; border-radius: 20px; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);" onclick="window.dataManager.deleteFolder('${folder.id}')">
+                                🗑️ ${t('folder.action.delete')}
+                            </button>
+                        </div>
                     </div>
-                    <div class="report-content">${Utils.escapeHtml(truncatedContent)}</div>
-                    <div class="report-actions">
-                        <button class="action-btn view-btn" onclick="event.stopPropagation(); window.dataManager.viewRapport('${rapport.id}')">${t('reports.action.view')}</button>
-                        ${rapport.hasPdf ? `
-                            <button class="action-btn download-pdf-btn" onclick="event.stopPropagation(); window.dataManager.downloadPDF('${rapport.id}')">${t('reports.action.pdf')}</button>
-                        ` : ''}
-                        <button class="action-btn share-btn" onclick="event.stopPropagation(); window.dataManager.shareRapport('${rapport.id}')">${t('reports.action.share')}</button>
-                        <button class="action-btn export-btn" onclick="event.stopPropagation(); window.dataManager.exportRapport('${rapport.id}')">${t('reports.action.export')}</button>
+                    
+                    <!-- Contenu repliable du dossier -->
+                    <div id="folder-content-${folder.id}" style="
+                        max-height: 0;
+                        overflow: hidden;
+                        transition: max-height 0.4s ease, padding 0.4s ease;
+                        padding: 0 25px;
+                    ">
+                        <div style="padding: 20px 0; border-top: 2px solid ${folder.color}30;">
+                            <div class="reports-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                ${folderRapports.length > 0 ? folderRapports.map(rapport => this.renderRapportCard(rapport)).join('') : `
+                                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; color: var(--gray-500); font-style: italic;">
+                                        <div style="font-size: 48px; margin-bottom: 15px; opacity: 0.5;">📭</div>
+                                        ${t('folder.empty')}
+                                    </div>
+                                `}
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
-        }).join('');
+        });
+
+        // Rapports sans dossier
+        const rapportsSansDossier = rapportsParDossier[null] || [];
+        if (rapportsSansDossier.length > 0) {
+            html += `
+                <div class="folder-section" style="
+                    margin-bottom: 25px; 
+                    border: 2px solid var(--gray-300); 
+                    border-radius: 20px; 
+                    padding: 25px; 
+                    background: linear-gradient(135deg, var(--gray-100), var(--gray-50));
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+                ">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--gray-300);">
+                        <h3 style="margin: 0; color: var(--gray-700); font-size: 20px; display: flex; align-items: center; gap: 12px; font-weight: 700;">
+                            📄 ${t('folder.none')}
+                            <span style="background: var(--gray-500); color: white; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: 700; box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);">
+                                ${rapportsSansDossier.length}
+                            </span>
+                        </h3>
+                    </div>
+                    <div class="reports-list" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        ${rapportsSansDossier.map(rapport => this.renderRapportCard(rapport)).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        container.innerHTML = html;
+    }
+
+    renderRapportCard(rapport) {
+        const dateValidated = new Date(rapport.validatedAt).toLocaleDateString();
+        const truncatedContent = Utils.truncateText(rapport.content, 150);
+        const sourceIndicator = rapport.sourceType === 'upload' ? '📁' : '🎤';
+        const pdfIndicator = rapport.hasPdf ? '📄' : '';
+        
+        return `
+            <div class="report-item" onclick="window.dataManager.viewRapport('${rapport.id}')">
+                <div class="report-header">
+                    <div class="report-title">📋 ${pdfIndicator} ${sourceIndicator} ${Utils.escapeHtml(rapport.title)}</div>
+                    <div class="report-date">${t('reports.validated.on')} ${dateValidated}</div>
+                </div>
+                <div class="report-content">${Utils.escapeHtml(truncatedContent)}</div>
+                <div class="report-actions">
+                    <button class="action-btn view-btn" onclick="event.stopPropagation(); window.dataManager.viewRapport('${rapport.id}')">${t('reports.action.view')}</button>
+                    ${rapport.hasPdf ? `
+                        <button class="action-btn download-pdf-btn" onclick="event.stopPropagation(); window.dataManager.downloadPDF('${rapport.id}')">${t('reports.action.pdf')}</button>
+                    ` : ''}
+                    <button class="action-btn share-btn" onclick="event.stopPropagation(); window.dataManager.shareRapport('${rapport.id}')">${t('reports.action.share')}</button>
+                    <button class="action-btn export-btn" onclick="event.stopPropagation(); window.dataManager.exportRapport('${rapport.id}')">${t('reports.action.export')}</button>
+                    <button class="action-btn" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: white;" onclick="event.stopPropagation(); window.dataManager.showMoveFolderModal('${rapport.id}')">📂 ${t('reports.action.move')}</button>
+                </div>
+            </div>
+        `;
     }
 }
