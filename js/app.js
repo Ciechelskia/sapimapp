@@ -41,8 +41,17 @@ class AppManager {
             this.onLanguageChanged(e.detail.language);
         });
         
-        // Pré-chargement des utilisateurs depuis Google Sheets optimisé
-        this.preloadUsers();
+        // Charger les utilisateurs en mémoire
+        this.loadUsersToMemory();
+    }
+
+    // Charger les utilisateurs depuis USERS_DB dans la mémoire
+    loadUsersToMemory() {
+        if (typeof USERS_DB !== 'undefined') {
+            console.log(`📋 ${USERS_DB.length} utilisateurs chargés depuis USERS_DB`);
+        } else {
+            console.warn('⚠️ USERS_DB non défini dans config.js');
+        }
     }
 
     // Initialiser les sélecteurs de langue (login ET header)
@@ -78,18 +87,6 @@ class AppManager {
         
         // Mettre à jour le titre de la page
         document.title = t('app.title');
-    }
-
-    // Pré-chargement optimisé des utilisateurs
-    async preloadUsers() {
-        try {
-            console.log('Pré-chargement des utilisateurs depuis Google Sheets optimisé...');
-            await this.sheetsManager.getUsers();
-            const stats = await this.sheetsManager.getUserStats();
-            console.log('Statistiques utilisateurs:', stats);
-        } catch (error) {
-            console.warn('Erreur lors du pré-chargement des utilisateurs:', error);
-        }
     }
 
     addToastStyles() {
@@ -200,7 +197,7 @@ class AppManager {
         }
     }
 
-    // === AUTHENTIFICATION OPTIMISÉE ===
+    // === AUTHENTIFICATION LOCALE (USERS_DB) ===
 
     async handleLogin() {
         const usernameEl = document.getElementById('username');
@@ -226,43 +223,62 @@ class AppManager {
         if (loginBtn) loginBtn.disabled = true;
 
         try {
-            // Authentification via Google Sheets optimisé
-            console.log('Authentification via Google Sheets optimisé...');
-            const authResult = await this.sheetsManager.authenticateUser(username, password);
+            // Authentification locale via USERS_DB
+            console.log('🔐 Authentification locale via USERS_DB...');
             
-            if (!authResult.success) {
-                // Messages d'erreur traduits
-                let errorKey = 'login.error.network';
-                if (authResult.error.includes('introuvable')) errorKey = 'login.error.notfound';
-                else if (authResult.error.includes('incorrect')) errorKey = 'login.error.wrongpass';
-                else if (authResult.error.includes('suspendu')) errorKey = 'login.error.inactive';
-                else if (authResult.error.includes('appareil')) errorKey = 'login.error.device';
-                
-                throw new Error(t(errorKey));
+            // Chercher l'utilisateur dans USERS_DB
+            const user = USERS_DB.find(u => u.username === username);
+            
+            if (!user) {
+                throw new Error(t('login.error.notfound'));
+            }
+            
+            if (user.password !== password) {
+                throw new Error(t('login.error.wrongpass'));
+            }
+            
+            if (!user.isActive) {
+                throw new Error(t('login.error.inactive'));
             }
 
-            const user = authResult.user;
-
-            // Vérification Device ID
+            // Vérification Device ID - Maximum 2 appareils
             const deviceId = Utils.generateDeviceId();
+
+            // Récupérer les appareils enregistrés depuis localStorage (car USERS_DB est statique)
+            const storageKey = `user_devices_${username}`;
+            let registeredDevices = [];
             
-            if (user.deviceId && user.deviceId !== deviceId) {
-                throw new Error(t('login.error.device'));
+            try {
+                const stored = localStorage.getItem(storageKey);
+                if (stored) {
+                    registeredDevices = JSON.parse(stored);
+                }
+            } catch (e) {
+                console.warn('Erreur lecture devices:', e);
+                registeredDevices = [];
             }
 
-            // Premier login = enregistrement du device
-            if (!user.deviceId) {
-                await this.sheetsManager.updateUserDeviceId(username, deviceId);
-                user.deviceId = deviceId;
-                console.log(`Device enregistré pour ${username}: ${deviceId}`);
+            // Vérifier si l'appareil actuel est déjà enregistré
+            const isDeviceRegistered = registeredDevices.includes(deviceId);
+
+            // Si l'appareil n'est pas enregistré et qu'on a déjà 2 appareils
+            if (!isDeviceRegistered && registeredDevices.length >= 2) {
+                throw new Error(t('login.error.device.limit'));
             }
 
-            // Mise à jour de la dernière connexion
-            await this.sheetsManager.updateLastConnection(username);
+            // Enregistrer le nouvel appareil si pas encore enregistré
+            if (!isDeviceRegistered) {
+                registeredDevices.push(deviceId);
+                localStorage.setItem(storageKey, JSON.stringify(registeredDevices));
+                console.log(`✅ Device ${registeredDevices.length}/2 enregistré pour ${username}`);
+            } else {
+                console.log(`✅ Device déjà enregistré (${registeredDevices.indexOf(deviceId) + 1}/2)`);
+            }
 
             // Connexion réussie
             this.currentUser = {
                 ...user,
+                deviceId: JSON.stringify(registeredDevices),
                 loginTime: new Date().toISOString()
             };
 
@@ -271,7 +287,7 @@ class AppManager {
             Utils.showToast(t('login.welcome', { name: this.currentUser.nom }), 'success');
 
         } catch (error) {
-            console.error('Erreur lors de l\'authentification:', error);
+            console.error('❌ Erreur lors de l\'authentification:', error);
             this.showError(error.message);
         } finally {
             if (loadingDiv) loadingDiv.style.display = 'none';
@@ -299,13 +315,19 @@ class AppManager {
                 userAvatarEl.textContent = initials;
             }
             
-            // Rôle traduit
+            // Rôle traduit avec compteur d'appareils
             if (userRoleEl) {
                 const roleKey = `role.${this.currentUser.role}`;
-                userRoleEl.textContent = t(roleKey);
+                let devices = [];
+                try {
+                    devices = JSON.parse(this.currentUser.deviceId || '[]');
+                } catch (e) {
+                    devices = this.currentUser.deviceId ? [this.currentUser.deviceId] : [];
+                }
+                userRoleEl.textContent = `${t(roleKey)} (${devices.length}/2 📱)`;
             }
             
-            // NOUVEAU : Forcer la mise à jour du sélecteur de langue dans le header
+            // Forcer la mise à jour du sélecteur de langue dans le header
             if (this.languageManager) {
                 this.languageManager.updateAllLanguageSelectors();
             }
@@ -362,17 +384,6 @@ class AppManager {
         return this.sheetsManager;
     }
 
-    // Force la mise à jour des utilisateurs avec le cache optimisé
-    async refreshUsers() {
-        try {
-            await this.sheetsManager.refreshCache();
-            Utils.showToast(t('toast.users.updated'), 'success');
-        } catch (error) {
-            console.error('Erreur lors de la mise à jour:', error);
-            Utils.showToast(t('toast.users.error'), 'error');
-        }
-    }
-
     // Redirection pour compatibilité
     editBrouillon(id) { return this.dataManager.editBrouillon(id); }
     validateBrouillon(id) { return this.dataManager.validateBrouillon(id); }
@@ -394,13 +405,13 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    if (typeof Utils === 'undefined') {
-        console.error('Utils non défini. Vérifiez que utils.js est chargé.');
+    if (typeof USERS_DB === 'undefined') {
+        console.error('USERS_DB non défini. Vérifiez que config.js contient USERS_DB.');
         return;
     }
 
-    if (typeof GoogleSheetsManager === 'undefined') {
-        console.error('GoogleSheetsManager non défini. Vérifiez que le gestionnaire optimisé est chargé.');
+    if (typeof Utils === 'undefined') {
+        console.error('Utils non défini. Vérifiez que utils.js est chargé.');
         return;
     }
 
@@ -417,9 +428,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialisation de l'app
     try {
         window.appManager = new AppManager();
-        console.log('Application initialisée avec succès (Google Sheets optimisé + i18n)');
+        console.log('✅ Application initialisée avec succès (Mode local USERS_DB + 2 appareils max)');
     } catch (error) {
-        console.error('Erreur lors de l\'initialisation:', error);
+        console.error('❌ Erreur lors de l\'initialisation:', error);
     }
 });
 
@@ -438,13 +449,6 @@ window.addEventListener('error', function(event) {
         Utils.showToast(t('toast.error.unexpected'), 'error');
     }
 });
-
-// Fonction pour forcer la mise à jour des utilisateurs
-window.refreshUsers = function() {
-    if (window.appManager) {
-        window.appManager.refreshUsers();
-    }
-};
 
 // Exposition globale pour les événements onclick (compatibilité)
 window.editBrouillon = function(id) { 

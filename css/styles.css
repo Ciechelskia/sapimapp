@@ -267,7 +267,7 @@ body {
 
 .user-role {
     font-size: 12px;
-    color: var(--gray-800);    /* Foncé pour fond blanc */
+    color: var(--gray-800);
     background: var(--gray-100);
     padding: 2px 8px;
     border-radius: 12px;
@@ -415,10 +415,10 @@ body {
     display: block;
     margin-bottom: 8px;
     font-weight: 700;
-    color: #ffffff;    /* Blanc pur pour labels de connexion */
+    color: #ffffff;
     text-align: left;
     font-size: 14px;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.8);    /* Ombre plus forte */
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
 }
 
 .form-group label {
@@ -837,7 +837,7 @@ body {
     top: 50%;
     transform: translateY(-50%);
     font-size: 16px;
-    color: #9ca3af;    /* Gris moyen pour icône sur fond sombre */
+    color: #9ca3af;
     pointer-events: none;
 }
 
@@ -846,12 +846,12 @@ body {
     text-align: center;
     margin-bottom: 25px;
     padding: 20px;
-    background: linear-gradient(135deg, rgba(31, 41, 55, 0.9), rgba(55, 65, 81, 0.9));    /* Fond plus sombre */
+    background: linear-gradient(135deg, rgba(31, 41, 55, 0.9), rgba(55, 65, 81, 0.9));
     border-radius: 15px;
     border: 1px solid rgba(37, 99, 235, 0.3);
-    color: #ffffff;    /* Blanc pur pour maximum contraste */
-    font-weight: 700;    /* Plus gras */
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5);    /* Ombre pour plus de lisibilité */
+    color: #ffffff;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
 .stats-section span {
@@ -871,9 +871,9 @@ body {
     overflow-y: auto;
     padding-right: 5px;
     display: grid;
-    grid-template-columns: 1fr 1fr;    /* Deux colonnes égales */
-    gap: 20px;    /* Espacement entre les colonnes */
-    align-items: start;    /* Alignement en haut */
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
 }
 
 .reports-list::-webkit-scrollbar {
@@ -899,13 +899,13 @@ body {
     border: 1px solid var(--gray-200);
     border-radius: 15px;
     padding: 25px;
-    margin-bottom: 0;    /* Retirer margin-bottom car grid gère l'espacement */
+    margin-bottom: 0;
     transition: var(--transition-normal);
     cursor: pointer;
     position: relative;
     overflow: hidden;
-    width: 100%;    /* S'assurer que les items prennent toute la largeur de colonne */
-    break-inside: avoid;    /* Éviter de couper les cartes */
+    width: 100%;
+    break-inside: avoid;
 }
 
 .report-item::before {
@@ -949,7 +949,7 @@ body {
 }
 
 .report-date {
-    color: var(--gray-800);    /* Foncé sur fond blanc */
+    color: var(--gray-800);
     font-size: 12px;
     text-align: right;
     white-space: nowrap;
@@ -998,7 +998,7 @@ body {
 }
 .edit-btn:hover { 
     transform: translateY(-2px); 
-    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4); 
+    box-shadow: 0 8px 20px rgba(37, 99,235, 0.4); 
 }
 
 .validate-btn { 
@@ -1118,7 +1118,7 @@ body {
     color: #991b1b;
 }
 
-/* MODAL */
+/* MODAL - MODIFICATIONS POUR AGRANDIR */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -1150,8 +1150,9 @@ body {
 .modal-content {
     background: var(--bg-primary);
     border-radius: 20px;
-    max-width: 90vw;
-    max-height: 90vh;
+    max-width: 800px;
+    width: 95%;
+    max-height: 85vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -1269,7 +1270,7 @@ body {
 
 .modal-textarea {
     width: 100%;
-    height: 300px;
+    min-height: 400px;
     padding: 20px;
     border: 2px solid var(--gray-300);
     border-radius: 15px;
@@ -1290,7 +1291,7 @@ body {
 
 .modal-input {
     width: 100%;
-    padding: 15px 20px;
+    padding: 18px 20px;
     border: 2px solid var(--gray-300);
     border-radius: 15px;
     margin-bottom: 20px;
@@ -1298,6 +1299,7 @@ body {
     transition: var(--transition-normal);
     background: rgba(255, 255, 255, 0.8);
     color: var(--gray-900);
+    font-weight: 600;
 }
 
 .modal-input:focus {
@@ -1431,7 +1433,20 @@ body {
     width: 80px;
 }
 
-/* RESPONSIVE MOBILE - Ajustement pour colonnes */
+/* RESPONSIVE MOBILE - Ajustement pour colonnes et modal */
+@media (max-width: 768px) {
+    .modal-content {
+        max-width: 95vw;
+        width: 95vw;
+        margin: 20px;
+    }
+    
+    .modal-textarea {
+        min-height: 350px;
+        font-size: 16px;
+    }
+}
+
 @media (max-width: 480px) {
     .container {
         padding: 10px;
@@ -1520,8 +1535,12 @@ body {
     }
     
     .modal-content {
-        margin: 10px;
         max-width: calc(100vw - 20px);
+        margin: 10px;
+    }
+    
+    .modal-textarea {
+        min-height: 300px;
     }
     
     .logo {
@@ -1544,8 +1563,8 @@ body {
     
     /* MOBILE: Une seule colonne pour les rapports */
     .reports-list {
-        grid-template-columns: 1fr;    /* Une seule colonne sur mobile */
-        gap: 15px;    /* Réduire l'espacement sur mobile */
+        grid-template-columns: 1fr;
+        gap: 15px;
     }
 }
 
@@ -1637,9 +1656,8 @@ body {
         border: 2px solid var(--gray-900);
     }
 }
-/* === AJOUTS POUR SÉLECTEUR DE LANGUE SUR PAGE LOGIN === */
 
-/* Sélecteur de langue sur la page de connexion */
+/* === SÉLECTEUR DE LANGUE SUR PAGE LOGIN === */
 .login-language-selector {
     position: absolute;
     top: 20px;
@@ -1647,12 +1665,10 @@ body {
     z-index: 100;
 }
 
-/* Ajustement pour que la page login soit relative */
 .login-page {
     position: relative;
 }
 
-/* Ajustement responsive pour mobile */
 @media (max-width: 480px) {
     .login-language-selector {
         top: 10px;

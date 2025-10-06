@@ -56,6 +56,50 @@ const USERS_DB = [
         deviceId: null,
         isActive: true,
         registeredAt: "2024-09-01T10:00:00Z"
+    },
+    {
+        id: 3,
+        username: "guillaumer",
+        password: "pass123",
+        nom: "Guillaume Renouard",
+        role: "commercial",
+        statut: "actif",
+        deviceId: null,
+        isActive: true,
+        dateCreation: "2025-10-5"
+    },
+    {
+        id: 4,
+        username: "andreac",
+        password: "pass123",
+        nom: "Andrea Ciechelski",
+        role: "commercial",
+        statut: "actif",
+        deviceId: null,
+        isActive: true,
+        dateCreation: "2025-09-24"
+    },
+    {
+        id: 5,
+        username: "cocoh",
+        password: "pass123",
+        nom: "Corentin Havouis",
+        role: "commercial",
+        statut: "actif",
+        deviceId: null,
+        isActive: true,
+        dateCreation: "2025-09-24"
+    },
+    {
+        id: 6,
+        username: "arthurf",
+        password: "pass123",
+        nom: "Arthur Fremion",
+        role: "commercial",
+        statut: "actif",
+        deviceId: null,
+        isActive: true,
+        dateCreation: "2025-09-24"
     }
 ];
 
